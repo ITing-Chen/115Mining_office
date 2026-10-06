@@ -1,0 +1,2200 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>回饋金作業管理系統</title>
+<style>
+  :root{
+    --teal-dark:#1f5e66;
+    --teal:#2b7d86;
+    --teal-light:#e6f2f3;
+    --blue:#2f7ba0;
+    --blue-dark:#245e7c;
+    --green:#2f9e6b;
+    --gray-tab:#c9d2d6;
+    --gray-tab-text:#5a6b70;
+    --border:#d8e0e2;
+    --text:#2c3538;
+    --text-soft:#6b7880;
+    --bg:#f4f7f8;
+    --row-alt:#f7fafb;
+    --amber:#c9822a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background:#fff;
+    color:var(--text);
+    font-size:14px;
+  }
+  .system-bar{
+    height:46px;border-bottom:1px solid #d9d9d9;padding:0 22px;
+    display:flex;align-items:center;justify-content:space-between;background:#fff;
+    color:#222;font-size:14px;
+  }
+  .breadcrumb{display:flex;align-items:center;gap:9px;white-space:nowrap;}
+  .breadcrumb .home-mark{font-size:16px;color:#111;line-height:1;}
+  .breadcrumb a{color:#1f5a78;text-decoration:underline;text-underline-offset:2px;}
+  .simple-mode{display:flex;align-items:center;gap:8px;color:#444;font-size:12px;}
+  .simple-switch{width:35px;height:18px;border-radius:10px;background:#ddd;position:relative;border:1px solid #ccc;}
+  .simple-switch::after{content:"";position:absolute;left:2px;top:2px;width:12px;height:12px;border-radius:50%;background:#fff;}
+  .app{max-width:1254px;margin:0 auto;padding:22px 22px 60px;}
+  .back-row{margin-bottom:50px;}
+  .back-btn{
+    display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:1px solid #0085b0;
+    border-radius:18px;background:#fff;color:#006b93;font-size:14px;font-weight:700;cursor:pointer;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;list-style:none;margin:0 0 30px;padding:0;gap:0;overflow:hidden;}
+  .tabs li{
+    flex:1;
+    position:relative;
+    background:#e9e9e9;
+    color:#666;
+    text-align:center;
+    padding:17px 10px 17px 28px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    clip-path:polygon(0 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,0 100%,22px 50%);
+    margin-left:-15px;
+    border-right:6px solid #fff;
+    transition:.15s;
+  }
+  .tabs li:first-child{margin-left:0;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,0 100%);}
+  .tabs li.new{background:#e9e9e9;color:#666;}
+  .tabs li.active{background:#72bed0;color:#003e57;z-index:2;}
+  .tabs li:hover:not(.active){filter:brightness(0.96);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .meta-bar{
+    background:#fff;border:0;border-radius:0;
+    padding:0 7px;margin-bottom:20px;font-size:13px;color:#006b93;
+    display:flex;gap:0;flex-wrap:wrap;font-weight:700;
+  }
+  .meta-bar span{display:flex;align-items:center;}
+  .meta-bar span:not(:last-child)::after{content:"";width:1px;height:15px;background:#0087aa;margin:0 16px;}
+  .meta-bar b{color:#006b93;}
+
+  .card{background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:16px;overflow:hidden;}
+  .card-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;border-bottom:2px solid var(--teal);
+  }
+  .card-head h3{margin:0;font-size:15px;color:var(--teal-dark);}
+  .card-body{padding:16px;}
+  .caret{color:var(--teal-dark);cursor:pointer;}
+
+  label{display:block;font-size:12.5px;color:var(--text-soft);margin-bottom:6px;font-weight:700;}
+  input[type=text],input[type=number],select{
+    width:100%;padding:8px 10px;border:1px solid #c7d1d4;border-radius:4px;font-size:13.5px;color:var(--text);background:#fff;
+  }
+  .field{margin-bottom:12px;}
+  .row{display:flex;gap:16px;flex-wrap:wrap;}
+  .row > .field{flex:1;min-width:180px;}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    border-radius:4px;padding:9px 18px;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid transparent;
+  }
+  .btn-primary{background:var(--blue);color:#fff;}
+  .btn-primary:hover{background:var(--blue-dark);}
+  .btn-outline{background:#fff;color:var(--text-soft);border-color:#c7d1d4;}
+  .btn-outline:hover{background:#f2f5f6;}
+  .btn-green{background:#fff;color:var(--green);border-color:var(--green);}
+  .btn-green:hover{background:#eafaf2;}
+  .btn-sm{padding:5px 10px;font-size:12px;}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    background:var(--teal-light);color:var(--teal-dark);text-align:left;
+    padding:10px 12px;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;
+  }
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--border);}
+  tbody tr:nth-child(even){background:var(--row-alt);}
+  tbody tr:hover{background:#eef6f7;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11.5px;font-weight:700;}
+  .tag-approved{background:#e2f5ea;color:#1f8a53;}
+  .tag-buffer{background:#eaf1fb;color:var(--blue-dark);}
+  .tag-history{background:#f3eee0;color:var(--amber);}
+  .check-cell{text-align:center;color:var(--green);font-weight:800;font-size:15px;}
+
+  /* ---------- Upload area ---------- */
+  .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .upload-box{
+    border:1.5px dashed #b9c8cc;border-radius:6px;padding:20px;text-align:center;background:#fafcfc;
+  }
+  .upload-box .ic{font-size:26px;color:var(--teal);margin-bottom:6px;}
+  .upload-box .fname{font-size:12.5px;color:var(--text-soft);margin-top:8px;}
+  .upload-box h4{margin:4px 0;font-size:13.5px;color:var(--text);}
+
+  /* ---------- Map layout ---------- */
+  .map-wrap{display:grid;grid-template-columns:1fr 300px;gap:16px;}
+  .map-controls{border-right:none;border-left:1px solid var(--border);padding-right:0;padding-left:16px;}
+  .ctrl-group{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #eef1f2;}
+  .ctrl-group:last-child{border-bottom:none;}
+  .ctrl-title{font-size:12.5px;font-weight:700;color:var(--teal-dark);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .ctrl-title .num{
+    width:16px;height:16px;border-radius:50%;background:var(--teal-dark);color:#fff;
+    font-size:10px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .range-row{display:flex;align-items:center;gap:8px;}
+  .range-row input[type=range]{flex:1;accent-color:var(--teal);}
+  .range-row .val{width:64px;text-align:right;font-weight:700;color:var(--teal-dark);font-size:13px;}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;margin-top:8px;}
+  .switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider-tg{position:absolute;inset:0;background:#ccd6d8;border-radius:20px;cursor:pointer;transition:.15s;}
+  .slider-tg:before{content:"";position:absolute;width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.15s;}
+  .switch input:checked + .slider-tg{background:var(--teal);}
+  .switch input:checked + .slider-tg:before{transform:translateX(16px);}
+
+  .parcel-list{max-height:230px;overflow-y:auto;border:1px solid #e6ecec;border-radius:4px;}
+  .parcel-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-bottom:1px solid #eef1f2;font-size:12.5px;}
+  .parcel-item:last-child{border-bottom:none;}
+  .parcel-item input[type=checkbox]{margin-top:2px;accent-color:var(--teal);}
+  .parcel-item .pname{font-weight:700;color:var(--text);}
+  .parcel-item .puse{color:var(--text-soft);font-size:11.5px;}
+  .parcel-item .pbuf{color:var(--blue-dark);font-size:11px;}
+
+  .map-canvas{
+    background:linear-gradient(135deg,#eef6f2,#eaf3f6);
+    border:1px solid var(--border);border-radius:6px;min-height:460px;
+    position:relative;overflow:hidden;
+  }
+  .map-canvas svg{width:100%;height:100%;display:block;}
+  .legend{
+    position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,.92);
+    border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:11.5px;
+  }
+  .legend div{display:flex;align-items:center;gap:6px;margin:3px 0;}
+  .legend .sw{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+  .map-toolbar{
+    position:absolute;top:12px;right:12px;background:#fff;border:1px solid var(--border);
+    border-radius:6px;display:flex;overflow:hidden;
+  }
+  .map-toolbar button{
+    border:none;background:#fff;padding:8px 10px;font-size:12px;cursor:pointer;color:var(--text-soft);border-right:1px solid var(--border);
+  }
+  .map-toolbar button:last-child{border-right:none;}
+  .map-toolbar button:hover{background:var(--teal-light);color:var(--teal-dark);}
+
+  .history-note{font-size:12px;color:var(--text-soft);margin-top:8px;}
+
+  /* ---------- Accordion (map controls) ---------- */
+  .ctrl-accordion{border:1px solid #e6ecec;border-radius:6px;margin-bottom:12px;overflow:hidden;}
+  .ctrl-acc-head{
+    display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--teal-light);
+    cursor:pointer;font-size:13px;font-weight:700;color:var(--teal-dark);
+  }
+  .ctrl-acc-head span:nth-child(2){flex:1;}
+  .acc-arrow{transition:transform .15s;color:var(--teal-dark);font-size:11px;}
+  .ctrl-acc-body{padding:12px;border-top:1px solid #e6ecec;}
+
+  .cat-list{border:1px solid #e6ecec;border-radius:4px;overflow:hidden;}
+  .cat-item{border-bottom:1px solid #eef1f2;}
+  .cat-item:last-child{border-bottom:none;}
+  .cat-head{
+    display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fafcfc;cursor:pointer;font-size:12.5px;
+  }
+  .cat-head input[type=checkbox]{accent-color:var(--teal);}
+  .cat-head span:nth-child(2){flex:1;font-weight:700;color:var(--text);}
+  .cat-head small{font-weight:400;color:var(--text-soft);}
+  .cat-body{padding:6px 8px 8px;background:#fff;}
+  .cat-body .parcel-list{max-height:none;border:none;}
+  .cat-body .parcel-item{padding:6px 4px;}
+
+
+  .placeholder-panel{
+    background:#fff;border:1px solid var(--border);border-radius:6px;padding:60px 20px;text-align:center;color:var(--text-soft);
+  }
+  .placeholder-panel .ic{font-size:34px;margin-bottom:10px;color:#bcc9cc;}
+
+  .hint{font-size:12px;color:var(--text-soft);margin-top:4px;}
+  .section-title{font-size:13.5px;font-weight:700;color:var(--text);margin:0 0 10px;}
+  .footnote-list{font-size:12px;color:var(--text-soft);line-height:1.9;margin:0;padding-left:18px;}
+
+  .calc-result{
+    background:var(--teal-light);border:1px solid #cfe4e6;border-radius:6px;padding:16px 20px;display:flex;gap:40px;flex-wrap:wrap;
+  }
+  .calc-result .item .k{font-size:12px;color:var(--text-soft);}
+  .calc-result .item .v{font-size:20px;font-weight:800;color:var(--teal-dark);}
+
+  .ratio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+  .ratio-item{
+    background:#f4f7f8;border:1px solid var(--border);border-radius:6px;padding:8px 10px;
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .ratio-item .rk{font-size:11.5px;color:var(--text-soft);}
+  .ratio-item .rv{font-size:15px;font-weight:800;color:var(--teal-dark);}
+
+  .formula-box{
+    background:#fafcfc;border:1px solid var(--border);border-radius:6px;padding:16px 20px;margin-bottom:16px;
+  }
+  .formula-block{margin-bottom:16px;}
+  .formula-block:last-child{margin-bottom:0;}
+  .formula-title{
+    display:inline-block;background:var(--blue-dark);color:#fff;font-size:12.5px;font-weight:700;
+    padding:5px 12px;border-radius:4px;margin-bottom:10px;
+  }
+  .formula-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:13px;flex-wrap:wrap;}
+  .formula-row .fname{color:var(--text);white-space:nowrap;}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;font-size:12.5px;}
+  .frac .fnum{padding:0 4px 4px;border-bottom:1.5px solid var(--text);}
+  .frac .fden{padding:4px 4px 0;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(30,40,42,.45);z-index:100;
+    align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:#fff;border-radius:8px;max-width:900px;width:100%;max-height:85vh;overflow:auto;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);
+  }
+  .modal-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px;border-bottom:2px solid var(--teal);position:sticky;top:0;background:#fff;
+  }
+  .modal-head h3{margin:0;font-size:15px;color:var(--teal-dark);}
+  .modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-soft);}
+  .modal-close:hover{color:var(--text);}
+  .modal-body{padding:18px 20px;}
+
+  /* ---------- Sortable table headers ---------- */
+  th.sortable{cursor:pointer;user-select:none;}
+  th.sortable .sort-ic{font-size:10px;color:var(--text-soft);margin-left:4px;}
+  th.sortable.sort-asc .sort-ic::after{content:"▲";color:var(--teal-dark);}
+  th.sortable.sort-desc .sort-ic::after{content:"▼";color:var(--teal-dark);}
+  th.sortable:not(.sort-asc):not(.sort-desc) .sort-ic::after{content:"↕";}
+  /* ---------- Tab 3 : 試算條件 ---------- */
+  .cf-list{margin:0;}
+  .cf-row{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:9px 0;border-bottom:1px dashed #eef1f2;
+  }
+  .cf-row:last-child{border-bottom:none;}
+  .cf-label{font-size:13px;color:var(--text);min-width:260px;}
+  .cf-label-with-action{display:flex;flex-direction:column;align-items:flex-start;gap:7px;}
+  .cf-detail-btn{padding:4px 9px;font-size:12px;}
+  .cf-sub{color:var(--text-soft);font-size:12px;font-weight:400;}
+  .cf-value-wrap{display:flex;align-items:center;gap:6px;}
+  .cf-unit{font-size:12px;color:var(--text-soft);white-space:nowrap;}
+  .cf-input{
+    width:160px;padding:6px 10px;font-size:13.5px;font-weight:700;
+    border:1px solid #c7d1d4;border-radius:4px;color:var(--text);background:#fff;
+  }
+  .cf-input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 2px rgba(43,125,134,.15);}
+  .cf-pill{
+    display:inline-block;min-width:64px;padding:5px 12px;border-radius:4px;
+    font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;
+  }
+  .cf-readonly{background:#eef2f3;color:var(--text);border:1px solid #e0e7e8;}
+  .cf-computed{background:#e2f5ea;color:#1f7a4d;border:1px solid #c3e6d3;}
+  .cf-source-note{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    margin-top:12px;padding-top:12px;border-top:1px solid #eef1f2;
+    font-size:12px;color:var(--text-soft);
+  }
+  .register-detail{display:none;flex:0 0 100%;margin-top:4px;overflow-x:auto;}
+  .register-detail.open{display:block;}
+  .register-detail table{min-width:720px;}
+  .register-detail tfoot td{background:#f3fafc;color:#006b93;font-weight:700;}
+  .cf-adjust{display:flex;align-items:center;gap:6px;margin-left:14px;padding-left:14px;border-left:1px dashed #d8e0e2;}
+  .cf-adjust-label{font-size:11.5px;color:var(--amber);font-weight:700;white-space:nowrap;}
+  .cf-input-sm{width:110px;padding:5px 8px;font-size:12.5px;}
+  .summary-stats{display:flex;gap:28px;flex-wrap:wrap;background:var(--teal-light);border:1px solid #cfe4e6;border-radius:6px;padding:12px 18px;margin-top:14px;}
+  .summary-stats .item{display:flex;flex-direction:column;gap:2px;}
+  .summary-stats .item .k{font-size:11.5px;color:var(--text-soft);}
+  .summary-stats .item .v{font-size:17px;font-weight:800;color:var(--teal-dark);}
+  .office-scope-banner{background:#eaf6f4;border:1px solid #b9ded7;border-radius:6px;padding:10px 14px;margin:12px 0;color:var(--teal-dark);font-size:13px;}
+  .office-only-hidden{display:none!important;}
+  #t1{display:none!important;}
+  #t3 tfoot,#t5 tfoot{display:none;}
+  #t3 > .card:nth-of-type(2),#t5 > .card:nth-of-type(2){display:none;}
+  #t3 .rule-notice{display:none;}
+  .round-note{font-size:11.5px;color:var(--amber);}
+
+  /* ---------- Tab 4 : 名冊查詢與上傳 ---------- */
+  .workflow-page{background:#fff;}
+  .query-section{margin-bottom:34px;}
+  .search-title{
+    display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid #00789e;padding:0 4px 5px;margin-bottom:22px;
+  }
+  .search-title h3{margin:0;font-size:16px;color:#006b93;}
+  .search-title h3 span{border-bottom:3px solid #008ab5;padding:0 2px 5px;}
+  .caret-circle{
+    width:21px;height:21px;border-radius:50%;background:#087da1;color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;margin-bottom:-16px;
+  }
+  .search-box{background:#f3fafc;border:0;border-radius:3px;padding:22px 27px 27px;min-height:174px;}
+  .search-box .row{gap:18px;}
+  .search-box label{color:#006b93;font-size:13px;margin-bottom:8px;}
+  .search-box input[type=text]{max-width:570px;height:35px;}
+  .search-box select{height:35px;}
+  .search-actions{display:flex;gap:20px;justify-content:center;margin-top:26px;}
+  .search-actions .btn{min-width:90px;justify-content:center;padding:8px 16px;}
+  .roster-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 13px;}
+  .roster-tools .btn{border-color:#00a277;color:#008c68;border-radius:4px;background:#fff;}
+  .roster-tools .btn:hover{background:#f1fbf7;}
+  .roster-tools .roster-title{margin-right:auto;color:#006b93;font-size:16px;font-weight:700;}
+  .table-scroll{width:100%;overflow-x:auto;}
+
+  table.bordered,table.table-ui{border:0;}
+  table.bordered{min-width:1180px;}
+  .tbl-fixed{table-layout:fixed;width:100%;}
+  .tbl-fixed td,.tbl-fixed th{overflow-wrap:break-word;word-break:break-word;white-space:normal;}
+  table.table-wide{min-width:1180px;}
+  table.bordered thead th,table.table-ui thead th{border-right:1px solid #c3d3d8;border-bottom:0;color:#006b93;background:#dceef3;padding:10px 8px;}
+  table.bordered thead th:last-child,table.table-ui thead th:last-child{border-right:0;}
+  table.bordered tbody td,table.table-ui tbody td{border:0;border-right:1px solid #d4d0ca;border-bottom:1px solid #d4d0ca;vertical-align:middle;padding:9px 8px;background:#fff;}
+  table.bordered tbody td:last-child,table.table-ui tbody td:last-child{border-right:0;}
+  table.bordered tbody tr:hover td,table.table-ui tbody tr:hover td{background:#f5fbfc;}
+  .col-no{width:56px;text-align:center;}
+  .col-num{width:170px;text-align:right;font-variant-numeric:tabular-nums;}
+  .fn-cell{display:flex;gap:8px;flex-wrap:wrap;}
+  .btn-fn{
+    display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:4px;
+    font-size:12.5px;font-weight:700;cursor:pointer;background:#fff;
+    color:var(--blue-dark);border:1px solid #b7d2dc;white-space:nowrap;
+  }
+  .btn-fn:hover{background:#eaf3f7;}
+  .col-cat{width:92px;text-align:center;}
+  .btn-fn-primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .btn-fn-primary:hover{background:var(--blue-dark);color:#fff;}
+
+  /* ---------- Paired 第一類／第二類 tables: force identical column widths ---------- */
+  table.table-aligned{table-layout:fixed;}
+  table.table-aligned th,table.table-aligned td{overflow-wrap:break-word;white-space:normal;}
+
+  /* ---------- Tab 5 / Tab 6 additions ---------- */
+  .dual-track{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px;}
+  .rule-notice{background:#fff8e8;border:1px solid #e8c97a;border-left:4px solid var(--amber);border-radius:6px;padding:11px 13px;margin:12px 0;color:#6d5621;font-size:12.5px;line-height:1.7;}
+  .upload-inline{display:grid;grid-template-columns:120px 1fr;gap:8px;margin:10px 0 12px;align-items:end;}
+  .upload-inline .field{margin:0;}
+  .total-row td{font-weight:800;background:#eef7f7;color:var(--teal-dark);}
+  .validation-errors{margin-top:12px;}
+  .track-box{border:1px solid var(--border);border-radius:6px;padding:14px 16px;background:#fafcfc;}
+  .track-box h5{margin:0 0 10px;font-size:13px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;}
+  .track-box .track-num{
+    width:18px;height:18px;border-radius:50%;background:var(--teal-dark);color:#fff;font-size:10.5px;
+    display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .track-box .fname{font-size:12px;color:var(--text-soft);margin-top:6px;word-break:break-all;}
+  .track-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .add-recipient-card{border:1px dashed #b9c8cc;background:#fafcfc;}
+  .status-pending{color:var(--amber);font-weight:700;}
+  .status-done{color:#1f8a53;font-weight:700;}
+  .status-none{color:var(--text-soft);}
+
+  @media (max-width:800px){
+    .system-bar{padding:0 12px;}.breadcrumb{overflow:hidden;text-overflow:ellipsis;}.simple-mode{display:none;}
+    .app{padding:16px 12px 40px;}.back-row{margin-bottom:28px;}
+    .tabs{overflow-x:auto;}.tabs li{min-width:175px;flex:0 0 175px;}
+    .meta-bar{gap:8px;}.meta-bar span:not(:last-child)::after{display:none;}
+    .search-box{padding:18px 16px;}.roster-tools .roster-title{width:100%;}
+    .dual-track{grid-template-columns:1fr;}
+  }
+
+</style>
+</head>
+<body>
+<header class="system-bar">
+  <div class="breadcrumb">
+    <span class="home-mark">⚑</span>
+    <strong>礦產權利金回饋金撥放</strong>
+    <span>/</span>
+    <a href="#">回饋金撥放管理</a>
+    <span>/</span>
+    <span id="currentPageTitle">1.回饋範圍確認</span>
+  </div>
+  <div class="simple-mode"><span>寬版模式</span><span class="simple-switch" aria-hidden="true"></span></div>
+</header>
+<div class="app">
+
+  <div class="back-row">
+    <button class="back-btn" type="button">‹ 回列表</button>
+  </div>
+
+  <div class="office-scope-banner"><b>公所端作業平台</b>｜登入單位：新竹市東區公所｜資料範圍：僅顯示本所轄內行政區資料</div>
+  <ul class="tabs">
+    <li class="new active" data-tab="t3">1. 回饋金額試算</li>
+    <li data-tab="t2">2. 回饋範圍公告</li>
+    <li data-tab="t4">3. 回饋金受領人名冊上傳</li>
+    <li data-tab="t5">4. 核算回饋金額</li>
+    <li data-tab="t6">5. 回饋金受領人受領</li>
+    <li data-tab="t7">6. 回饋金結算</li>
+  </ul>
+
+  <!-- ============ TAB 1：回饋範圍確認（新增） ============ -->
+  <section class="panel" id="t1">
+    <div class="meta-bar">
+      <span>回饋金發放年度：<b>115年</b></span>
+      <span>圖資狀態：<b style="color:#1f8a53">已更新</b></span>
+      <span>目前納入礦業用地：<b>18 筆</b></span>
+      <span>更新日期：<b>115-04-02 15:16:30</b></span>
+    </div>
+
+    <!-- 確認回饋金來源 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>確認回饋金來源</h3>
+        <button class="btn btn-primary btn-sm">⬇ 匯出清單</button>
+      </div>
+      <div class="card-body">
+        <p class="hint">系統將自動比對礦業權者是否同時符合以下三項條件：① 已核定用地／井位　② 礦業簿有實際生產量　③ 已實收繳納權利金，以下僅列出同時符合三項條件之礦業權者</p>
+        <p class="hint" style="margin-bottom:14px;">說明：①「已核定用地／井位」以 N－3 年 7 月至 N－2 年 6 月間，曾有效之礦業用地進行計算；②生產區間採計 N（當年）－3 年 7 月至 N－2 年 6 月；③權利金採計 N－3 下期至 N－2 上期。</p>
+
+        <div class="row">
+          <div class="field">
+            <label>礦業權者</label>
+            <input type="text" placeholder="請輸入礦業權者名稱">
+          </div>
+          <div class="field">
+            <label>礦區字號</label>
+            <input type="text" placeholder="請輸入礦區字號">
+          </div>
+          <div class="field">
+            <label>礦場名稱</label>
+            <input type="text" placeholder="請輸入礦場名稱">
+          </div>
+        </div>
+        <div class="actions" style="margin-bottom:14px;">
+          <button class="btn btn-outline">清除</button>
+          <button class="btn btn-primary">🔍 查詢</button>
+        </div>
+
+        <div class="row" style="align-items:center;margin-bottom:8px;">
+          <div class="field" style="max-width:160px;margin-bottom:0;">
+            <label style="margin-bottom:4px;">顯示筆數</label>
+            <select id="miningPageSize" onchange="renderMiningTable()">
+              <option value="10" selected="">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <p class="hint" style="margin-top:24px;">預設依礦區字號排序，顯示前 10 筆</p>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+        <table class="table-ui table-wide" id="miningTable">
+          <thead>
+            <tr>
+              <th>礦業權者</th><th>礦區字號</th><th>礦場名稱</th><th>已核定用地／井位</th>
+              <th>礦業簿生產量</th><th>前年度實收權利金（合計）</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>大成礦業股份有限公司</td><td>台濟採字第 0231 號</td><td>大成品礦場</td><td>礦業用地</td>
+              <td>
+                大理石(供交水泥用) 0.00000 公噸<br>
+                大理石(石材用) 0.00000 公噸<br>
+                白雲石 0.00000 公噸<br>
+                大理石(原料石) 4,978.41000 公噸
+                <span class="hint" style="display:block;margin-top:4px;">生產期間：112年07月至113年06月</span>
+              </td>
+              <td>NT$ 1,860,000</td>
+            </tr>
+            <tr>
+              <td>新竹礦業開發有限公司</td><td>台濟採字第 0256 號</td><td>新竹礦場二號</td><td>礦業用地</td>
+              <td>
+                大理石(供交水泥用) 120.50000 公噸<br>
+                大理石(石材用) 860.32000 公噸<br>
+                白雲石 45.00000 公噸<br>
+                大理石(原料石) 2,150.60000 公噸
+                <span class="hint" style="display:block;margin-top:4px;">生產期間：112年07月至113年06月</span>
+              </td>
+              <td>NT$ 1,297,500</td>
+            </tr>
+            <tr>
+              <td>合利石礦股份有限公司</td><td>台濟採字第 0305 號</td><td>合利石材礦場</td><td>礦業用地</td>
+              <td>
+                大理石(供交水泥用) 0.00000 公噸<br>
+                大理石(石材用) 3,420.75000 公噸<br>
+                白雲石 0.00000 公噸<br>
+                大理石(原料石) 610.20000 公噸
+                <span class="hint" style="display:block;margin-top:4px;">生產期間：112年07月至113年06月</span>
+              </td>
+              <td>NT$ 2,280,000</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 圖台 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>回饋範圍套疊圖台</h3>
+        <div class="actions" style="margin:0;">
+          <button class="btn btn-outline btn-sm" onclick="saveMapConfig()">💾 暫存</button>
+          <span class="caret">▲</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="hint" style="margin-bottom:10px;">行政區依回饋類別著色：第一類為藍色、第二類為橙色；行政區同時符合兩類範圍時，圖層以第一類優先顯示。</p>
+        <div class="map-wrap">
+          <!-- 左側圖台畫布 -->
+          <div class="map-canvas">
+            <div class="map-toolbar">
+              <button>＋</button><button>－</button><button>⤢ 全圖</button><button>⛶ 量測</button>
+            </div>
+            <svg viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
+              <!-- 底圖行政界 -->
+              <path d="M40,60 L660,50 L640,400 L60,420 Z" fill="none" stroke="#c3d3d6" stroke-width="1.5"></path>
+              <path d="M180,60 L200,420" stroke="#d7e2e4" stroke-width="1"></path>
+              <path d="M400,55 L420,415" stroke="#d7e2e4" stroke-width="1"></path>
+              <path d="M60,220 L640,210" stroke="#d7e2e4" stroke-width="1"></path>
+
+              <!-- 行政區依回饋類別著色（第一類優先於第二類） -->
+              <polygon points="60,60 250,58 245,215 65,220" fill="#2f7ba0" fill-opacity="0.22"></polygon>
+              <polygon points="250,58 400,57 395,215 245,215" fill="#2f7ba0" fill-opacity="0.22"></polygon>
+              <polygon points="400,57 640,55 636,213 395,215" fill="#e8a23a" fill-opacity="0.24"></polygon>
+              <polygon points="65,220 245,215 240,405 62,410" fill="#e8a23a" fill-opacity="0.24"></polygon>
+              <polygon points="245,215 395,215 460,395 250,405" fill="#e8a23a" fill-opacity="0.24"></polygon>
+              <polygon points="395,215 636,213 630,400 460,395" fill="#2f7ba0" fill-opacity="0.22"></polygon>
+
+              <!-- 井位環域（1,200m）-->
+              <circle cx="260" cy="150" r="70" fill="#2f7ba0" fill-opacity="0.16" stroke="#2f7ba0" stroke-width="1.5" stroke-dasharray="4 3"></circle>
+              <circle cx="420" cy="260" r="70" fill="#2f7ba0" fill-opacity="0.16" stroke="#2f7ba0" stroke-width="1.5" stroke-dasharray="4 3"></circle>
+              <circle cx="480" cy="340" r="55" fill="#2f7ba0" fill-opacity="0.16" stroke="#2f7ba0" stroke-width="1.5" stroke-dasharray="4 3"></circle>
+
+              <!-- 井位點 -->
+              <circle cx="260" cy="150" r="4" fill="#245e7c"></circle>
+              <circle cx="420" cy="260" r="4" fill="#245e7c"></circle>
+              <circle cx="480" cy="340" r="4" fill="#245e7c"></circle>
+
+              <!-- 礦業用地（核准，納入）-->
+              <polygon points="230,120 300,110 310,175 235,185" fill="#2f9e6b" fill-opacity="0.55" stroke="#1f8a53" stroke-width="1.5"></polygon>
+              <polygon points="390,225 450,215 460,290 395,300" fill="#2f9e6b" fill-opacity="0.55" stroke="#1f8a53" stroke-width="1.5"></polygon>
+              <polygon points="520,330 570,320 575,365 525,375" fill="#2f9e6b" fill-opacity="0.55" stroke="#1f8a53" stroke-width="1.5"></polygon>
+
+              <!-- 礦業用地（非核准，未勾選）-->
+              <polygon points="150,300 200,295 205,335 155,340" fill="#b9c2c4" fill-opacity="0.5" stroke="#8b979a" stroke-width="1.5" stroke-dasharray="3 2"></polygon>
+            </svg>
+            <div class="legend">
+              <div><span class="sw" style="background:#2f9e6b;"></span>礦業用地（納入）</div>
+              <div><span class="sw" style="background:#b9c2c4;"></span>礦業用地（未勾選）</div>
+              <div><span class="sw" style="background:#2f7ba0;opacity:.5;"></span>井位 1,200m 環域</div>
+              <div><span class="sw" style="background:#2f7ba0;opacity:.35;"></span>行政區（第一類）</div>
+              <div><span class="sw" style="background:#e8a23a;opacity:.4;"></span>行政區（第二類）</div>
+            </div>
+          </div>
+
+          <!-- 右側控制面板 -->
+          <div class="map-controls">
+
+            <!-- 村里別 -->
+            <div class="ctrl-accordion">
+              <div class="ctrl-acc-head" onclick="toggleAcc('accVillage')">
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" checked=""><span class="slider-tg"></span></label>
+                <span>村里別</span>
+                <span class="acc-arrow" id="accVillage-arrow">▾</span>
+              </div>
+              <div class="ctrl-acc-body" id="accVillage" style="display:none;">
+                <div class="field">
+                  <label>套用村里圖資年份</label>
+                  <select id="villageYearSelect" onchange="applyVillageYear()">
+                    <option value="115">115年（現行）</option>
+                    <option value="114">114年</option>
+                    <option value="113">113年</option>
+                  </select>
+                  <div class="hint">選擇欲套疊於圖台的村里界圖資年份版本</div>
+                </div>
+                <div class="field">
+                  <label>圖資檔案</label>
+                  <input type="text" placeholder="尚未選擇檔案（SHP／GeoJSON）" readonly="">
+                </div>
+                <div class="actions" style="justify-content:flex-start;">
+                  <button class="btn btn-primary btn-sm">⬆ 選擇並上傳</button>
+                  <button class="btn btn-outline btn-sm">下載範本</button>
+                  <a class="btn btn-outline btn-sm" href="https://data.gov.tw/dataset/7438" target="_blank" rel="noopener">🔗 政府資料開放平台</a>
+                </div>
+                <p class="hint">目前生效版本：village_115.shp（115-04-01 15:02 上傳，王小明）</p>
+                <button class="btn btn-outline btn-sm" onclick="toggleHist('villageHist')">📜 查看歷程紀錄</button>
+                <div id="villageHist" style="display:none;margin-top:10px;">
+                  <table class="table-ui">
+                    <thead>
+                      <tr><th>檔案名稱</th><th>上傳人員</th><th>上傳時間</th><th>狀態</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>village_115.shp</td><td>王小明</td><td>115-04-01 15:02</td>
+                        <td><span class="tag tag-approved">現行</span></td>
+                      </tr>
+                      <tr>
+                        <td>village_115_v2.shp</td><td>陳美華</td><td>115-03-15 09:40</td>
+                        <td><span class="tag tag-history">歷史</span></td>
+                      </tr>
+                      <tr>
+                        <td>village_115_v1.shp</td><td>陳美華</td><td>115-02-20 11:02</td>
+                        <td><span class="tag tag-history">歷史</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 井位 -->
+            <div class="ctrl-accordion">
+              <div class="ctrl-acc-head" onclick="toggleAcc('accWell')">
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" checked=""><span class="slider-tg"></span></label>
+                <span>井位</span>
+                <span class="acc-arrow" id="accWell-arrow">▾</span>
+              </div>
+              <div class="ctrl-acc-body" id="accWell" style="display:none;">
+                <label style="margin-top:8px;">井位座標上傳</label>
+                <div class="upload-inline">
+                  <div class="field"><label>年份</label><select id="wellUploadYear"><option>115年</option><option>116年</option><option>117年</option></select></div>
+                  <div class="track-actions"><button class="btn btn-primary btn-sm" onclick="document.getElementById('wellCoordinateFile').click()">⬆ 上傳檔案</button><button class="btn btn-outline btn-sm" onclick="downloadWellTemplate()">⬇ 下載範本</button></div>
+                </div>
+                <input type="file" id="wellCoordinateFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="uploadWellCoordinates(this)">
+                <div class="fname" id="wellCoordinateFileName">尚未選擇井位座標檔案（.xlsx／.csv）</div>
+                <label style="margin-top:8px;">環域範圍調整（公尺）</label>
+                <input type="number" value="1200" step="50" min="0">
+                <div class="hint">預設 1,200 公尺，可依個案需求調整後即時重繪環域</div>
+
+                <label style="margin-top:14px;">井位清單</label>
+                <div class="parcel-list">
+                  <div class="parcel-item">
+                    <input type="checkbox" checked="">
+                    <div style="flex:1;">
+                      <div class="pname">井位 W-01</div>
+                      <div class="puse">座標：24.812, 120.978</div>
+                    </div>
+                  </div>
+                  <div class="parcel-item">
+                    <input type="checkbox" checked="">
+                    <div style="flex:1;">
+                      <div class="pname">井位 W-02</div>
+                      <div class="puse">座標：24.795, 121.012</div>
+                    </div>
+                  </div>
+                  <div class="parcel-item">
+                    <input type="checkbox" checked="">
+                    <div style="flex:1;">
+                      <div class="pname">井位 W-03</div>
+                      <div class="puse">座標：24.771, 121.034</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="hint">取消勾選之井位將不納入 1,200 公尺環域聯集計算</div>
+              </div>
+            </div>
+
+            <!-- 礦業用地 -->
+            <div class="ctrl-accordion">
+              <div class="ctrl-acc-head" onclick="toggleAcc('accMine')">
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" checked=""><span class="slider-tg"></span></label>
+                <span>礦業用地</span>
+                <span class="acc-arrow" id="accMine-arrow">▾</span>
+              </div>
+              <div class="ctrl-acc-body" id="accMine" style="display:none;">
+
+                <div class="toggle-row" style="margin-top:8px;">
+                  <span>礦業用地開啟環域分析</span>
+                  <label class="switch"><input type="checkbox" id="mineBufferToggle" onchange="document.getElementById('mineBufferInput').style.display=this.checked?'block':'none'"><span class="slider-tg"></span></label>
+                </div>
+                <div id="mineBufferInput" style="display:none;margin-top:8px;">
+                  <label>礦業用地外推環域範圍（公尺）</label>
+                  <input type="number" value="50">
+                  <div class="hint">開啟後可為礦業用地額外設定外推環域，不受井位環域統一設定限制</div>
+                </div>
+
+                <label style="margin-top:14px;">礦業用地清單（依核准用途分類）</label>
+                <div class="cat-list">
+
+                  <div class="cat-item">
+                    <div class="cat-head" onclick="toggleCat('catA')">
+                      <input type="checkbox" checked="" onclick="event.stopPropagation()">
+                      <span>探、採礦場<small>（含緩衝帶、坑口、井坪等）</small></span>
+                      <span class="acc-arrow" id="catA-arrow">▾</span>
+                    </div>
+                    <div class="cat-body" id="catA" style="display:none;">
+                      <div class="parcel-list">
+                        <div class="parcel-item">
+                          <input type="checkbox" checked="">
+                          <div style="flex:1;"><div class="pname">礦業用地 A-01（坑口）</div><div class="puse">核准用途：探、採礦場 <span class="tag tag-approved">核准</span></div></div>
+                        </div>
+                        <div class="parcel-item">
+                          <input type="checkbox" checked="">
+                          <div style="flex:1;"><div class="pname">礦業用地 A-02（井坪）</div><div class="puse">核准用途：探、採礦場 <span class="tag tag-approved">核准</span></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="cat-item">
+                    <div class="cat-head" onclick="toggleCat('catB')">
+                      <input type="checkbox" checked="" onclick="event.stopPropagation()">
+                      <span>儲礦場<small>（含捨石場、廢土石堆積場、選礦場等）</small></span>
+                      <span class="acc-arrow" id="catB-arrow">▾</span>
+                    </div>
+                    <div class="cat-body" id="catB" style="display:none;">
+                      <div class="parcel-list">
+                        <div class="parcel-item">
+                          <input type="checkbox" checked="">
+                          <div style="flex:1;"><div class="pname">礦業用地 B-05（選礦場）</div><div class="puse">核准用途：儲礦場 <span class="tag tag-approved">核准</span></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="cat-item">
+                    <div class="cat-head" onclick="toggleCat('catC')">
+                      <input type="checkbox" checked="" onclick="event.stopPropagation()">
+                      <span>廠庫、房屋<small>（含事務所、機房、倉庫、工寮等）</small></span>
+                      <span class="acc-arrow" id="catC-arrow">▾</span>
+                    </div>
+                    <div class="cat-body" id="catC" style="display:none;">
+                      <div class="parcel-list">
+                        <div class="parcel-item">
+                          <input type="checkbox" checked="">
+                          <div style="flex:1;"><div class="pname">礦業用地 C-11（事務所）</div><div class="puse">核准用途：廠庫、房屋 <span class="tag tag-approved">核准</span></div></div>
+                        </div>
+                        <div class="parcel-item">
+                          <input type="checkbox">
+                          <div style="flex:1;"><div class="pname">礦業用地 C-12（工寮，申請中）</div><div class="puse">核准用途：廠庫、房屋 <span class="tag tag-buffer">非核准</span></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="cat-item">
+                    <div class="cat-head" onclick="toggleCat('catD')">
+                      <input type="checkbox" checked="" onclick="event.stopPropagation()">
+                      <span>運搬用地<small>（含卡車路、索道、卡車迴轉場等）</small></span>
+                      <span class="acc-arrow" id="catD-arrow">▾</span>
+                    </div>
+                    <div class="cat-body" id="catD" style="display:none;">
+                      <div class="parcel-list">
+                        <div class="parcel-item">
+                          <input type="checkbox" checked="">
+                          <div style="flex:1;"><div class="pname">礦業用地 D-03（卡車路）</div><div class="puse">核准用途：運搬用地 <span class="tag tag-approved">核准</span></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="cat-item">
+                    <div class="cat-head" onclick="toggleCat('catE')">
+                      <input type="checkbox" checked="" onclick="event.stopPropagation()">
+                      <span>其他<small>（含沉砂池、滯洪池等及其他）</small></span>
+                      <span class="acc-arrow" id="catE-arrow">▾</span>
+                    </div>
+                    <div class="cat-body" id="catE" style="display:none;">
+                      <div class="parcel-list">
+                        <div class="parcel-item">
+                          <input type="checkbox">
+                          <div style="flex:1;"><div class="pname">礦業用地 E-01（滯洪池）</div><div class="puse">核准用途：其他 <span class="tag tag-buffer">非核准</span></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="cat-item">
+                    <div class="cat-head" onclick="toggleCat('catF')">
+                      <input type="checkbox" checked="" onclick="event.stopPropagation()">
+                      <span>火藥庫<small>（含炸藥庫、雷管庫、硝酸銨庫、看守房等）</small></span>
+                      <span class="acc-arrow" id="catF-arrow">▾</span>
+                    </div>
+                    <div class="cat-body" id="catF" style="display:none;">
+                      <div class="parcel-list">
+                        <div class="parcel-item">
+                          <input type="checkbox" checked="">
+                          <div style="flex:1;"><div class="pname">礦業用地 F-02（雷管庫）</div><div class="puse">核准用途：火藥庫 <span class="tag tag-approved">核准</span></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+               <div class="hint">系統依「核准用途」分類顯示礦業用地，預設開啟核准用途之用地，可展開各類別手動勾選／取消個別用地</div>
+             </div>
+           </div>
+
+            <!-- 回饋範圍行政區 -->
+            <div class="ctrl-accordion">
+              <div class="ctrl-acc-head" onclick="toggleAcc('accScope')">
+                <label class="switch" onclick="event.stopPropagation()"><input type="checkbox" id="scopeLayerToggle" checked=""><span class="slider-tg"></span></label>
+                <span>回饋範圍行政區</span>
+                <span class="acc-arrow" id="accScope-arrow">▾</span>
+              </div>
+              <div class="ctrl-acc-body" id="accScope" style="display:none;">
+                <p class="hint" style="margin-top:0;">依「回饋範圍確認結果」套疊著色行政區界，可分別開關第一類、第二類範圍顯示</p>
+                <div class="toggle-row">
+                  <span><span class="sw" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#2f7ba0;opacity:.35;margin-right:6px;"></span>第一類回饋範圍</span>
+                  <label class="switch"><input type="checkbox" checked=""><span class="slider-tg"></span></label>
+                </div>
+                <div class="toggle-row">
+                  <span><span class="sw" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e8a23a;opacity:.4;margin-right:6px;"></span>第二類回饋範圍</span>
+                  <label class="switch"><input type="checkbox" checked=""><span class="slider-tg"></span></label>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-notice"><b>排重計算規則：</b>中油石油天然氣礦之礦業用地與井位重疊時，排除礦業用地重複計入；同一礦區落於同一村里之多口油井，僅計一次加權次數。</div>
+
+            <div class="card" style="margin:12px 0;box-shadow:none;">
+              <div class="card-head"><h3>戶政名冊掃描檔 OCR 辨識</h3><span class="tag tag-approved">範圍確認前置作業</span></div>
+              <div class="card-body">
+                <p class="hint" style="margin-top:0;">在執行回饋範圍確認前，上傳戶政機關提供之 PDF／JPG／PNG 掃描檔，經 OCR 辨識、欄位檢核及人工校正後，產生設籍人數與行政區比對資料。</p>
+                <div class="summary-stats" style="margin-top:10px;">
+                  <div class="item"><span class="k">辨識欄位</span><span class="v" style="font-size:13px;">姓名、身分證字號、戶籍地址、設籍日期</span></div>
+                  <div class="item"><span class="k">自動檢核</span><span class="v" style="font-size:13px;">格式、重複、行政區、低信心欄位</span></div>
+                  <div class="item"><span class="k">產出資料</span><span class="v" style="font-size:13px;">村里設籍人數與比對清單</span></div>
+                </div>
+                <div class="actions" style="margin-top:14px;"><button class="btn btn-primary" onclick="openOcrModal()">🔍 上傳掃描檔並進行 OCR 辨識</button></div>
+                <p class="hint" id="ocrStatus" style="margin:10px 0 0;color:#c9822a;font-weight:700;">辨識狀態：可獨立執行，不影響回饋範圍確認</p>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-top:4px;" onclick="confirmScope()">✅ 回饋範圍確認</button>
+            <p class="hint" style="margin-top:6px;">確認後將依目前圖層與勾選狀態，更新下方「回饋範圍確認結果」</p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 查詢結果 -->
+    <div class="card">
+      <div class="card-head">
+        <h3>回饋範圍確認結果</h3>
+        <div class="actions" style="margin:0;">
+          <button class="btn btn-primary btn-sm">⬇ 匯出回饋範圍公告表</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="hint" style="margin-bottom:12px;">回饋範圍依類別分別呈現，並列出該行政區所包含之礦業權者名稱</p>
+
+        <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+          <span class="tag tag-approved">第一類回饋範圍</span>
+        </h4>
+        <div class="table-scroll" style="margin-bottom:20px;">
+        <table class="table-ui tbl-fixed">
+          <colgroup>
+            <col style="width:6%"><col style="width:10%"><col style="width:10%"><col style="width:30%"><col style="width:14%"><col style="width:30%">
+          </colgroup>
+          <thead>
+            <tr><th>編號</th><th>縣市</th><th>鄉鎮市區</th><th>行政村(里)</th><th>納入礦業用地筆數</th><th>礦業權者</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>新竹市</td><td>北區</td><td>曲溪里</td><td>3</td><td>大成礦業股份有限公司</td></tr>
+            <tr><td>2</td><td>新竹市</td><td>東區</td><td>明湖里、柴橋里</td><td>3</td><td>新竹礦業開發有限公司</td></tr>
+            <tr><td>3</td><td>新竹縣</td><td>關西鎮</td><td>金山里、東山里</td><td>4</td><td>大成礦業股份有限公司、新竹礦業開發有限公司</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+          <span class="tag tag-buffer">第二類回饋範圍</span>
+        </h4>
+        <div class="table-scroll">
+        <table class="table-ui tbl-fixed">
+          <colgroup>
+            <col style="width:6%"><col style="width:10%"><col style="width:10%"><col style="width:30%"><col style="width:14%"><col style="width:30%">
+          </colgroup>
+          <thead>
+            <tr><th>編號</th><th>縣市</th><th>鄉鎮市區</th><th>行政村(里)</th><th>納入礦業用地筆數</th><th>礦業權者</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>新竹市</td><td>東區</td><td>湖濱里、高峰里</td><td>2</td><td>新竹礦業開發有限公司</td></tr>
+            <tr><td>2</td><td>新竹市</td><td>香山區</td><td>東香里、頂福里、香村里</td><td>2</td><td>合利石礦股份有限公司</td></tr>
+            <tr><td>3</td><td>台南市</td><td>官田區</td><td>官田里、隆田里、隆本里、渡拔里、東西庄里、二鎮里</td><td>4</td><td>合利石礦股份有限公司</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions" style="justify-content:flex-end;margin-top:18px;">
+      <button class="btn btn-primary">下一步 →</button>
+    </div>
+  </section>
+
+  <!-- ============ TAB 2：回饋範圍公告（原設計） ============ -->
+  <section class="panel workflow-page" id="t2">
+    <div class="meta-bar">
+      <span>回饋金發放年度：<b>115年</b></span>
+      <span>公告狀態：<b id="announcementStatus" style="color:#197a52">公告中</b></span>
+      <span>更新日期：<b>115-04-02 15:16:30</b></span>
+    </div>
+
+    <div class="query-section">
+      <div class="search-title">
+        <h3><span>查詢條件</span></h3>
+        <span class="caret-circle">▲</span>
+      </div>
+      <div class="search-box">
+        <div class="row">
+          <div class="field" style="margin-bottom:0;flex:2;">
+            <label>關鍵字</label>
+            <input type="text" placeholder="請輸入縣市、鄉鎮市、行政村(里)">
+          </div>
+        </div>
+        <div class="search-actions">
+          <button class="btn btn-outline">清除</button>
+          <button class="btn btn-primary">查詢</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-green btn-sm" style="margin-bottom:13px;">⇩ 回饋範圍村里範本下載</button>
+
+    <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-approved">第一類回饋範圍</span>
+    </h4>
+    <div class="table-scroll" style="margin-bottom:24px;">
+        <table class="bordered tbl-fixed" id="t2Table1">
+          <colgroup>
+            <col style="width:6%"><col style="width:10%"><col style="width:10%"><col style="width:42%"><col style="width:17%"><col style="width:15%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortTable('t2Table1',0,this)">編號<span class="sort-ic"></span></th>
+              <th class="sortable" onclick="sortTable('t2Table1',1,this)">縣市<span class="sort-ic"></span></th>
+              <th class="sortable" onclick="sortTable('t2Table1',2,this)">鄉鎮市<span class="sort-ic"></span></th>
+              <th>行政村(里)</th>
+              <th class="sortable" onclick="sortTable('t2Table1',4,this)">礦業用地(井位)重複村(里)次數<span class="sort-ic"></span></th>
+              <th class="sortable" onclick="sortTable('t2Table1',5,this)">戶政機關之設籍名冊(A)<span class="sort-ic"></span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>新竹市</td><td>北區</td><td>曲溪里</td><td>1</td><td>5,949</td></tr>
+            <tr><td>2</td><td>新竹市</td><td>東區</td><td>明湖里、柴橋里</td><td>1</td><td>13,972</td></tr>
+            <tr><td>3</td><td>新竹縣</td><td>關西鎮</td><td>金山里、東山里</td><td>2</td><td>1,390</td></tr>
+          </tbody>
+        </table>
+    </div>
+
+    <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-buffer">第二類回饋範圍</span>
+    </h4>
+    <div class="table-scroll">
+        <table class="bordered tbl-fixed" id="t2Table2">
+          <colgroup>
+            <col style="width:6%"><col style="width:10%"><col style="width:10%"><col style="width:42%"><col style="width:17%"><col style="width:15%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="sortable" onclick="sortTable('t2Table2',0,this)">編號<span class="sort-ic"></span></th>
+              <th class="sortable" onclick="sortTable('t2Table2',1,this)">縣市<span class="sort-ic"></span></th>
+              <th class="sortable" onclick="sortTable('t2Table2',2,this)">鄉鎮市<span class="sort-ic"></span></th>
+              <th>行政村(里)</th>
+              <th class="sortable" onclick="sortTable('t2Table2',4,this)">礦業用地(井位)重複村(里)次數<span class="sort-ic"></span></th>
+              <th class="sortable" onclick="sortTable('t2Table2',5,this)">戶政機關之設籍名冊(A)<span class="sort-ic"></span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>新竹市</td><td>東區</td><td>湖濱里、高峰里</td><td>1</td><td>9,076</td></tr>
+            <tr><td>2</td><td>新竹市</td><td>香山區</td><td>東香里、頂福里、香村里</td><td>1</td><td>4,629</td></tr>
+            <tr><td>3</td><td>台南市</td><td>官田區</td><td>官田里、隆田里、隆本里、渡拔里、東西庄里、二鎮里</td><td>2</td><td>4,200</td></tr>
+          </tbody>
+        </table>
+    </div>
+
+    <div class="actions" style="justify-content:flex-end;margin-top:18px;gap:12px;">
+      <button class="btn btn-outline" onclick="openWithdrawConfirm()">↩ 撤回公告</button>
+      <button class="btn btn-primary" onclick="submitAnnouncement()">📢 公告送出</button>
+    </div>
+  </section>
+
+  <!-- ---- 撤回公告確認 Modal ---- -->
+  <div class="modal-overlay" id="withdrawModal" onclick="if(event.target===this)closeWithdrawConfirm()">
+    <div class="modal-box" style="max-width:460px;">
+      <div class="modal-head">
+        <h3>確認撤回公告</h3>
+        <button class="modal-close" onclick="closeWithdrawConfirm()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin:0 0 14px;color:var(--text);font-size:13.5px;line-height:1.7;">
+          撤回後，本年度作業流程將回到<b>「1. 回饋範圍確認」</b>重新開始，
+          已完成之回饋範圍公告及後續試算結果將被清除，此操作無法復原。
+        </p>
+        <p style="margin:0;color:var(--amber);font-size:13px;font-weight:700;">確定要撤回本次回饋範圍公告嗎？</p>
+        <div class="actions" style="margin-top:20px;">
+          <button class="btn btn-outline" onclick="closeWithdrawConfirm()">取消</button>
+          <button class="btn btn-primary" style="background:#c0392b;" onclick="confirmWithdraw()">確定撤回</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 3：回饋金額試算（新增） ============ -->
+  <section class="panel active" id="t3">
+    <div class="meta-bar">
+      <span>回饋金發放年度：<b>115年</b></span>
+      <span>資料來源：<b>系統提供之核定回饋範圍資料</b></span>
+      <span>本頁結果<b>僅供試算參考，不作為結算依據</b></span>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>試算條件</h3><span class="caret">▲</span></div>
+      <div class="card-body">
+
+        <div class="cf-list">
+          <div class="cf-row">
+           <span class="cf-label">115年度礦產權利金總額</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">100,000,000</span><span class="cf-unit">元</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">提撥比例</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">50</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">本年度回饋金總額</span>
+            <span class="cf-value-wrap">
+              <span class="cf-pill cf-computed">50,000,000</span><span class="cf-unit">元</span>
+              <span class="cf-adjust"><span class="cf-adjust-label">微調試算</span><input type="number" class="cf-input cf-input-sm" placeholder="0"><span class="cf-unit">元</span></span>
+            </span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">回饋礦場總數</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">5</span><span class="cf-unit">場</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">礦業權(井位)所在鄉鎮市區總數</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">18</span><span class="cf-unit">區</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">公所行政作業費比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">15</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">公所行政作業費（15%）</span>
+            <span class="cf-value-wrap">
+              <span class="cf-pill cf-computed">7,500,000</span><span class="cf-unit">元</span>
+              <span class="cf-adjust"><span class="cf-adjust-label">微調試算</span><input type="number" class="cf-input cf-input-sm" placeholder="0"><span class="cf-unit">元</span></span>
+            </span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">回饋金受領人回饋比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">85</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">回饋金受領人總金額（85%）</span>
+            <span class="cf-value-wrap">
+              <span class="cf-pill cf-computed">42,500,000</span><span class="cf-unit">元</span>
+              <span class="cf-adjust"><span class="cf-adjust-label">微調試算</span><input type="number" class="cf-input cf-input-sm" placeholder="0"><span class="cf-unit">元</span></span>
+            </span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">定額回饋比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">80</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">加權回饋比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">20</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">第一類回饋比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">80</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">第二類回饋比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">20</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label cf-label-with-action">
+              <span>回饋金受領人總數<span class="cf-sub">（戶政機關之設籍名冊）</span></span>
+              <button type="button" class="btn btn-outline btn-sm cf-detail-btn" onclick="toggleRegisterDetail(this)">查看村里設籍人數清單</button>
+            </span>
+            <span class="cf-value-wrap"><input type="number" class="cf-input" id="t3RegisterCount" value="39216"><span class="cf-unit">人</span></span>
+            <div class="register-detail" id="registerDetail">
+              <table class="table-ui">
+                <thead><tr><th>縣市</th><th>鄉鎮市區</th><th>行政村(里)</th><th>回饋類別</th><th>設籍人數</th></tr></thead>
+                <tbody>
+                  <tr><td>新竹市</td><td>北區</td><td>曲溪里</td><td>第一類</td><td>5,949</td></tr>
+                  <tr><td>新竹市</td><td>東區</td><td>明湖里</td><td>第一類</td><td>8,000</td></tr>
+                  <tr><td>新竹市</td><td>東區</td><td>柴橋里</td><td>第一類</td><td>5,972</td></tr>
+                  <tr><td>新竹市</td><td>東區</td><td>湖濱里</td><td>第二類</td><td>5,000</td></tr>
+                  <tr><td>新竹市</td><td>東區</td><td>高峰里</td><td>第二類</td><td>4,076</td></tr>
+                  <tr><td>新竹市</td><td>香山區</td><td>東香里</td><td>第二類</td><td>1,600</td></tr>
+                  <tr><td>新竹市</td><td>香山區</td><td>頂福里</td><td>第二類</td><td>1,500</td></tr>
+                  <tr><td>新竹市</td><td>香山區</td><td>香村里</td><td>第二類</td><td>1,529</td></tr>
+                  <tr><td>新竹縣</td><td>關西鎮</td><td>金山里</td><td>第一類</td><td>700</td></tr>
+                  <tr><td>新竹縣</td><td>關西鎮</td><td>東山里</td><td>第一類</td><td>690</td></tr>
+                  <tr><td>台南市</td><td>官田區</td><td>官田里</td><td>第二類</td><td>700</td></tr>
+                  <tr><td>台南市</td><td>官田區</td><td>隆田里</td><td>第二類</td><td>850</td></tr>
+                  <tr><td>台南市</td><td>官田區</td><td>隆本里</td><td>第二類</td><td>750</td></tr>
+                  <tr><td>台南市</td><td>官田區</td><td>渡拔里</td><td>第二類</td><td>600</td></tr>
+                  <tr><td>台南市</td><td>官田區</td><td>東西庄里</td><td>第二類</td><td>650</td></tr>
+                  <tr><td>台南市</td><td>官田區</td><td>二鎮里</td><td>第二類</td><td>650</td></tr>
+                </tbody>
+                <tfoot><tr><td colspan="4">合計</td><td>39,216</td></tr></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="cf-source-note">
+          <span class="tag tag-approved">API 自動同步</span>
+          <span>資料來源：政府公開平台</span>
+          <span>最後同步時間：115-08-17 09:00</span>
+          <button class="btn btn-outline btn-sm" style="margin-left:auto;">🔄 重新同步</button>
+        </div>
+
+        <div class="actions" style="margin-top:16px;">
+          <button class="btn btn-outline">重新輸入</button>
+          <button class="btn btn-primary">🧮 開始試算</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>試算結果</h3>
+        <div class="actions" style="margin:0;">
+          <button class="btn btn-outline btn-sm" onclick="toggleFormula()">ℹ️ 試算公式說明</button>
+          <button class="btn btn-outline btn-sm">⬇ 匯出報表（依回饋類別）</button>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <div id="formulaBox" class="formula-box" style="display:none;">
+          <div class="formula-block">
+            <div class="formula-title">公所行政作業費－第一類</div>
+            <div class="formula-row">
+              <span class="fname">定額回饋金 =</span>
+              <span class="frac"><span class="fnum">回饋金年度預算 × 15% × 80%</span><span class="fden">回饋鄉鎮區總數</span></span>
+            </div>
+            <div class="formula-row">
+              <span class="fname">加權回饋金 =</span>
+              <span class="frac"><span class="fnum">回饋金年度預算 × 15% × 20% × 本區用地或井位重複村里數</span><span class="fden">全國用地或井位重複村里總數</span></span>
+            </div>
+          </div>
+          <div class="formula-block">
+            <div class="formula-title">公所行政作業費－第二類</div>
+            <div class="formula-row">
+              <span class="fname">回饋金 =</span>
+              <span class="frac"><span class="fnum">回饋金年度預算 × 15% × 80%</span><span class="fden">第二類回饋鄉鎮市區總數</span></span>
+            </div>
+          </div>
+          <div class="formula-block">
+            <div class="formula-title">民眾回饋金－第一類回饋範圍</div>
+            <div class="formula-row">
+              <span class="fname">定額回饋金 =</span>
+              <span class="frac"><span class="fnum">回饋金年度預算 × 85% × 70% × 80%</span><span class="fden">第一類回饋範圍總人口數</span></span>
+            </div>
+            <div class="formula-row">
+              <span class="fname">加權回饋金 =</span>
+              <span class="frac"><span class="fnum">回饋金年度預算 × 85% × 70% × 20% × 本區用地或井位重複村里數</span><span class="fden">全國用地或井位重複村里總數 × 本區第一類回饋範圍總人口數</span></span>
+            </div>
+          </div>
+          <div class="formula-block">
+            <div class="formula-title">民眾回饋金－第二類回饋範圍</div>
+            <div class="formula-row">
+              <span class="fname">回饋金 =</span>
+              <span class="frac"><span class="fnum">回饋金年度預算 × 85% × 30%</span><span class="fden">第二類回饋範圍總人口數</span></span>
+            </div>
+          </div>
+        </div>
+
+        <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+          <span class="tag tag-approved">第一類回饋範圍試算結果</span>
+        </h4>
+        <div class="table-scroll" style="margin-bottom:12px;">
+        <table class="table-ui table-wide tbl-fixed">
+          <colgroup>
+            <col style="width:8%"><col style="width:8%"><col style="width:16%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:16%"><col style="width:16%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>縣市</th><th>鄉鎮市區</th><th>村里</th><th>戶政機關之設籍名冊</th>
+              <th>公所行政作業費</th><th>公所行政作業費<br>(捨去後)</th>
+              <th>受領人每人平均金額</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>新竹市</td><td>北區</td><td>曲溪里</td><td>5,949</td><td>NT$ 492,000</td><td>NT$ 492,000</td><td>NT$ 1,580</td><td>NT$ 1,550</td></tr>
+            <tr><td>新竹市</td><td>東區</td><td>明湖里、柴橋里</td><td>13,972</td><td>NT$ 518,000</td><td>NT$ 518,000</td><td>NT$ 1,640</td><td>NT$ 1,600</td></tr>
+            <tr><td>新竹縣</td><td>關西鎮</td><td>金山里、東山里</td><td>1,390</td><td>NT$ 501,000</td><td>NT$ 501,000</td><td>NT$ 1,720</td><td>NT$ 1,700</td></tr>
+          </tbody>
+          <tfoot><tr class="total-row"><td>總計：2 縣市</td><td>3 鄉鎮市區</td><td>5 村里</td><td>21,311 人</td><td>NT$ 1,511,000</td><td>NT$ 1,511,000</td><td>NT$ 34,704,300</td><td>NT$ 33,939,150</td></tr></tfoot>
+        </table>
+        </div>
+
+        <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+          <span class="tag tag-buffer">第二類回饋範圍試算結果</span>
+        </h4>
+        <div class="table-scroll" style="margin-bottom:12px;">
+        <table class="table-ui table-wide tbl-fixed">
+          <colgroup>
+            <col style="width:8%"><col style="width:8%"><col style="width:16%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:16%"><col style="width:16%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>縣市</th><th>鄉鎮市區</th><th>村里</th><th>戶政機關之設籍名冊</th>
+              <th>公所行政作業費</th><th>公所行政作業費<br>(捨去後)</th>
+              <th>受領人每人平均金額</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>新竹市</td><td>東區</td><td>湖濱里、高峰里</td><td>9,076</td><td>NT$ 476,000</td><td>NT$ 476,000</td><td>NT$ 410</td><td>NT$ 400</td></tr>
+            <tr><td>新竹市</td><td>香山區</td><td>東香里、頂福里、香村里</td><td>4,629</td><td>NT$ 527,000</td><td>NT$ 527,000</td><td>NT$ 390</td><td>NT$ 350</td></tr>
+            <tr><td>台南市</td><td>官田區</td><td>官田里、隆田里、隆本里、渡拔里、東西庄里、二鎮里</td><td>4,200</td><td>NT$ 489,000</td><td>NT$ 489,000</td><td>NT$ 420</td><td>NT$ 400</td></tr>
+          </tbody>
+          <tfoot><tr class="total-row"><td>總計：2 縣市</td><td>3 鄉鎮市區</td><td>11 村里</td><td>17,905 人</td><td>NT$ 1,492,000</td><td>NT$ 1,492,000</td><td>NT$ 7,290,470</td><td>NT$ 6,930,550</td></tr></tfoot>
+        </table>
+        </div>
+        <div class="summary-stats office-only-hidden">
+          <div class="item"><span class="k">縣市總計數量（不重複）</span><span class="v">3</span></div>
+          <div class="item"><span class="k">鄉鎮市區總計數量（不重複）</span><span class="v">5</span></div>
+          <div class="item"><span class="k">村里數量（不重複）</span><span class="v">16</span></div>
+          <div class="item"><span class="k">設籍總人數</span><span class="v">39,216</span></div>
+          <div class="item"><span class="k">公所行政作業費總計(捨去後)</span><span class="v">NT$ 3,003,000</span></div>
+          <div class="item"><span class="k">回饋金受領人總金額</span><span class="v">NT$ 40,869,700</span></div>
+          <div class="item"><span class="k">第一類＋第二類回饋金總金額</span><span class="v">NT$ 43,872,700</span></div>
+        </div>
+
+        <p class="round-note" style="margin-top:14px;">捨去規則：受領人每人平均金額不足 50 元、公所行政作業費不足 1,000 元部分，均無條件捨去。</p>
+        <div class="rule-notice">
+          <b>備註：本年度礦業用地／井位對應行政區異動（假資料）</b>
+          <table class="table-ui" style="margin-top:8px;background:#fff;">
+            <thead><tr><th>異動</th><th>縣市</th><th>鄉鎮市區</th><th>村里</th><th>異動原因</th><th>對應資料</th></tr></thead>
+            <tbody>
+              <tr><td><span class="tag tag-approved">新增</span></td><td>苗栗縣</td><td>公館鄉</td><td>福德村</td><td>新增井位環域涵蓋</td><td>中油苗栗礦區／井位 W-18</td></tr>
+              <tr><td><span class="tag tag-approved">新增</span></td><td>新竹縣</td><td>關西鎮</td><td>錦山里</td><td>新增核定礦業用地</td><td>竹礦字第 115-03 號／用地 A-07</td></tr>
+              <tr><td><span class="tag tag-buffer">減少</span></td><td>新竹市</td><td>香山區</td><td>茄苳里</td><td>原井位停用且環域解除</td><td>井位 W-05</td></tr>
+              <tr><td><span class="tag tag-buffer">減少</span></td><td>台南市</td><td>官田區</td><td>社子里</td><td>礦業用地核准期限屆滿</td><td>南礦字第 109-12 號／用地 D-02</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TAB 4：回饋金受領人名冊上傳 ============ -->
+  <section class="panel workflow-page" id="t4">
+    <div class="meta-bar">
+      <span>回饋金發放年度：<b>115年</b></span>
+      <span>名冊狀態：<b style="color:#c9822a">部分待確認</b></span>
+      <span>第一類：<b>1 區（已上傳 0）</b></span>
+      <span>第二類：<b>1 區（已上傳 0）</b></span>
+      <span>更新日期：<b>115-04-10 10:25</b></span>
+    </div>
+
+    <div class="query-section">
+        <div class="search-title">
+          <h3><span>查詢條件</span></h3>
+          <span class="caret-circle" onclick="toggleSearch()">▲</span>
+        </div>
+        <div class="search-box" id="t4SearchBox">
+          <div class="row">
+            <div class="field" style="margin-bottom:0;flex:2;">
+              <label>關鍵字</label>
+              <input type="text" placeholder="請輸入縣市、鄉鎮市、行政村(里)">
+            </div>
+            <div class="field" style="margin-bottom:0;max-width:200px;">
+              <label>回饋類別</label>
+              <select id="t4CatFilter" onchange="filterByCategory()">
+                <option value="all">全部</option>
+                <option value="1">第一類</option>
+                <option value="2">第二類</option>
+              </select>
+            </div>
+          </div>
+          <div class="search-actions">
+            <button class="btn btn-outline">清除</button>
+            <button class="btn btn-primary">查詢</button>
+          </div>
+        </div>
+    </div>
+
+    <div class="roster-tools">
+      <div class="roster-title">回饋金受領人名冊</div>
+      <button class="btn btn-sm">⇩ 第一類名冊範本下載</button>
+      <button class="btn btn-sm">⇩ 第二類名冊範本下載</button>
+    </div>
+
+    <h4 id="t4Group1" style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-approved">第一類回饋範圍</span>
+    </h4>
+    <div class="table-scroll" id="t4Wrap1" style="margin-bottom:24px;">
+      <table class="bordered tbl-fixed" id="t4Table1">
+        <colgroup>
+          <col style="width:5%"><col style="width:9%"><col style="width:9%"><col style="width:27%"><col style="width:13%"><col style="width:13%"><col style="width:14%"><col style="width:10%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="col-no">編號</th><th>縣市</th><th>鄉鎮市</th><th>行政村(里)</th>
+            <th class="col-num">戶政機關之設籍名冊人數</th>
+            <th class="col-num">公所確認後名冊人數</th>
+            <th>功能</th><th>113年戶政機關之設籍名冊資料</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="col-no">1</td><td>新竹市</td><td>北區</td><td>曲溪里</td>
+              <td class="col-num">5,949</td><td class="col-num">5,949</td>
+              <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn">👁 檢視</button><button class="btn-fn" onclick="openRosterValidation()">⬆ 重新上傳</button></div></td><td><button class="btn-fn" onclick="downloadOcrResult('第一類／新竹市東區')">⬇ 下載檔案</button></td>
+            </tr>
+            <tr>
+              <td class="col-no">2</td><td>新竹市</td><td>東區</td><td>明湖里、柴橋里</td>
+              <td class="col-num">13,972</td><td class="col-num">13,972</td>
+              <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn">👁 檢視</button><button class="btn-fn" onclick="openRosterValidation()">⬆ 重新上傳</button></div></td><td><button class="btn-fn" onclick="downloadOcrResult('第一類／新竹市東區')">⬇ 下載檔案</button></td>
+            </tr>
+            <tr>
+              <td class="col-no">3</td><td>新竹縣</td><td>關西鎮</td><td>金山里、東山里</td>
+              <td class="col-num">1,390</td><td class="col-num">--</td>
+              <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn btn-fn-primary" onclick="openRosterValidation()">⬆ 上傳</button></div></td><td><button class="btn-fn" onclick="downloadOcrResult('第一類／新竹市東區')">⬇ 下載檔案</button></td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+    <h4 id="t4Group2" style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-buffer">第二類回饋範圍</span>
+    </h4>
+    <div class="table-scroll" id="t4Wrap2">
+      <table class="bordered tbl-fixed" id="t4Table2">
+        <colgroup>
+          <col style="width:5%"><col style="width:9%"><col style="width:9%"><col style="width:27%"><col style="width:13%"><col style="width:13%"><col style="width:14%"><col style="width:10%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="col-no">編號</th><th>縣市</th><th>鄉鎮市</th><th>行政村(里)</th>
+            <th class="col-num">戶政機關之設籍名冊人數</th>
+            <th class="col-num">公所確認後名冊人數</th>
+            <th>功能</th><th>113年戶政機關之設籍名冊資料</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="col-no">1</td><td>台南市</td><td>官田區</td><td>官田里、隆田里、隆本里、渡拔里、東西庄里、二鎮里</td>
+              <td class="col-num">4,200</td><td class="col-num">--</td>
+              <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn btn-fn-primary" onclick="openRosterValidation()">⬆ 上傳</button></div></td><td><button class="btn-fn" onclick="downloadOcrResult('第二類／新竹市東區')">⬇ 下載檔案</button></td>
+            </tr>
+            <tr>
+              <td class="col-no">2</td><td>新竹市</td><td>東區</td><td>湖濱里、高峰里</td>
+              <td class="col-num">9,076</td><td class="col-num">--</td>
+              <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn btn-fn-primary" onclick="openRosterValidation()">⬆ 上傳</button></div></td><td><button class="btn-fn" onclick="downloadOcrResult('第二類／新竹市東區')">⬇ 下載檔案</button></td>
+            </tr>
+            <tr>
+              <td class="col-no">3</td><td>新竹市</td><td>香山區</td><td>東香里、頂福里、香村里</td>
+              <td class="col-num">4,629</td><td class="col-num">4,629</td>
+              <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn">👁 檢視</button><button class="btn-fn" onclick="openRosterValidation()">⬆ 重新上傳</button></div></td><td><button class="btn-fn" onclick="downloadOcrResult('第二類／新竹市東區')">⬇ 下載檔案</button></td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+  </section>
+
+  <div class="modal-overlay" id="rosterValidationModal" onclick="if(event.target===this)closeRosterValidation()">
+    <div class="modal-box" style="max-width:760px;">
+      <div class="modal-head"><h3>清冊／名冊上傳檢核</h3><button class="modal-close" onclick="closeRosterValidation()">✕</button></div>
+      <div class="modal-body">
+        <p class="hint">系統於送出前檢核身分證格式與長度、必填欄位及重複資料，並提示錯誤列數與原因。</p>
+        <div class="track-actions"><button class="btn btn-primary btn-sm" onclick="document.getElementById('rosterValidationFile').click()">⬆ 選擇清冊／名冊檔案</button><button class="btn btn-outline btn-sm" onclick="runRosterValidation()">開始檢核</button></div>
+        <input type="file" id="rosterValidationFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="document.getElementById('rosterValidationName').textContent='已選擇檔案：'+this.files[0].name">
+        <div class="fname" id="rosterValidationName">尚未選擇檔案（.xlsx／.csv）</div>
+        <div class="validation-errors" id="validationErrors" style="display:none;">
+          <div class="rule-notice"><b>檢核未通過：</b>共 3 列錯誤，請修正後重新上傳。</div>
+          <table class="table-ui"><thead><tr><th>列數</th><th>欄位</th><th>錯誤原因</th></tr></thead><tbody><tr><td>第 8 列</td><td>身分證字號</td><td>格式錯誤，首碼須為英文字母且後接 9 位數字</td></tr><tr><td>第 15 列</td><td>身分證字號</td><td>長度不符，應為 10 碼</td></tr><tr><td>第 22、31 列</td><td>受領人資料</td><td>身分證字號重複</td></tr></tbody></table>
+        </div>
+        <div class="actions" style="margin-top:16px;"><button class="btn btn-outline" onclick="closeRosterValidation()">關閉</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 5：核算回饋金額（新增） ============ -->
+  <section class="panel workflow-page" id="t5">
+    <div class="meta-bar">
+      <span>回饋金發放年度：<b>115年</b></span>
+      <span>更新日期：<b>115-08-17 09:00</b></span>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>核算條件（承續回饋金額試算條件）</h3><span class="caret">▲</span></div>
+      <div class="card-body">
+        <div class="cf-list">
+          <div class="cf-row">
+            <span class="cf-label">115年度礦產權利金總額</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">100,000,000</span><span class="cf-unit">元</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">提撥比例</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">50</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">本年度回饋金總額</span>
+            <span class="cf-value-wrap">
+              <span class="cf-pill cf-computed">50,000,000</span><span class="cf-unit">元</span>
+              <span class="cf-adjust"><span class="cf-adjust-label">核算微調</span><input type="number" class="cf-input cf-input-sm" placeholder="0"><span class="cf-unit">元</span></span>
+            </span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">回饋範圍公所總數</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">5</span><span class="cf-unit">所</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">礦業用地(井位)重複村(里)總次數</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">8</span><span class="cf-unit">次</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">公所行政作業費比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">15</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">公所行政作業費（15%）</span>
+            <span class="cf-value-wrap">
+              <span class="cf-pill cf-computed">7,500,000</span><span class="cf-unit">元</span>
+              <span class="cf-adjust"><span class="cf-adjust-label">核算微調</span><input type="number" class="cf-input cf-input-sm" placeholder="0"><span class="cf-unit">元</span></span>
+            </span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">回饋金受領人分配比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">85</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">回饋金受領人總額（85%）</span>
+            <span class="cf-value-wrap">
+              <span class="cf-pill cf-computed">42,500,000</span><span class="cf-unit">元</span>
+              <span class="cf-adjust"><span class="cf-adjust-label">核算微調</span><input type="number" class="cf-input cf-input-sm" placeholder="0"><span class="cf-unit">元</span></span>
+            </span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">定額回饋比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">80</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">加權回饋比率</span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">20</span><span class="cf-unit">%</span></span>
+          </div>
+          <div class="cf-row">
+            <span class="cf-label">回饋金受領人總數<span class="cf-sub">（回饋金受領人名冊加總）</span></span>
+            <span class="cf-value-wrap"><span class="cf-pill cf-readonly">39,216</span><span class="cf-unit">人</span></span>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top:14px;">
+          <button class="btn btn-primary" onclick="alert('已依上方核算條件（含微調金額）重新核算各行政區回饋金額。')">🧮 計算</button>
+        </div>
+        <p class="hint" style="margin-top:6px;">核算階段延用「回饋金額試算」階段之捨去（向下取整）邏輯：受領人每人平均金額不足 50 元、公所行政作業費不足 1,000 元部分，均無條件捨去；上方「核算微調」欄位可對個別項目金額進行人工調整，調整後將重新套用捨去規則計算。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>核算結果</h3>
+        <div class="actions" style="margin:0;">
+          <button class="btn btn-outline btn-sm">⬇ 匯出報表（依回饋類別）</button>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+          <span class="tag tag-approved">第一類回饋範圍核算結果</span>
+        </h4>
+        <div class="table-scroll" style="margin-bottom:12px;">
+        <table class="table-ui table-wide tbl-fixed">
+          <colgroup>
+            <col style="width:8%"><col style="width:8%"><col style="width:16%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:16%"><col style="width:16%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>縣市</th><th>鄉鎮市區</th><th>村里</th><th>戶政機關之設籍名冊</th>
+              <th>公所行政作業費<br>(核算後)</th><th>公所行政作業費<br>(捨去後)</th>
+              <th>受領人每人平均可分配金額<br>(核算後)</th><th>受領人每人平均金額<br>(捨去後)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>新竹市</td><td>北區</td><td>曲溪里</td><td>5,949</td><td>NT$ 492,000</td><td>NT$ 492,000</td><td>NT$ 1,580</td><td>NT$ 1,550</td></tr>
+            <tr><td>新竹市</td><td>東區</td><td>明湖里、柴橋里</td><td>13,972</td><td>NT$ 518,000</td><td>NT$ 518,000</td><td>NT$ 1,640</td><td>NT$ 1,600</td></tr>
+            <tr><td>新竹縣</td><td>關西鎮</td><td>金山里、東山里</td><td>1,390</td><td>NT$ 501,000</td><td>NT$ 501,000</td><td>NT$ 1,720</td><td>NT$ 1,700</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+          <span class="tag tag-buffer">第二類回饋範圍核算結果</span>
+        </h4>
+        <div class="table-scroll" style="margin-bottom:12px;">
+        <table class="table-ui table-wide tbl-fixed">
+          <colgroup>
+            <col style="width:8%"><col style="width:8%"><col style="width:16%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:16%"><col style="width:16%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>縣市</th><th>鄉鎮市區</th><th>村里</th><th>戶政機關之設籍名冊</th>
+              <th>公所行政作業費<br>(核算後)</th><th>公所行政作業費<br>(捨去後)</th>
+              <th>受領人每人平均可分配金額<br>(核算後)</th><th>受領人每人平均金額<br>(捨去後)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>新竹市</td><td>東區</td><td>湖濱里、高峰里</td><td>9,076</td><td>NT$ 476,000</td><td>NT$ 476,000</td><td>NT$ 410</td><td>NT$ 400</td></tr>
+            <tr><td>新竹市</td><td>香山區</td><td>東香里、頂福里、香村里</td><td>4,629</td><td>NT$ 527,000</td><td>NT$ 527,000</td><td>NT$ 390</td><td>NT$ 350</td></tr>
+            <tr><td>台南市</td><td>官田區</td><td>官田里、隆田里、隆本里、渡拔里、東西庄里、二鎮里</td><td>4,200</td><td>NT$ 489,000</td><td>NT$ 489,000</td><td>NT$ 420</td><td>NT$ 400</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="summary-stats office-only-hidden">
+          <div class="item"><span class="k">鄉鎮市區總計數量（不重複）</span><span class="v">5</span></div>
+          <div class="item"><span class="k">村里數量（不重複）</span><span class="v">16</span></div>
+          <div class="item"><span class="k">公所行政作業費總計(捨去後)</span><span class="v">NT$ 3,003,000</span></div>
+          <div class="item"><span class="k">回饋金受領人總金額</span><span class="v">NT$ 40,869,700</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>行政區查詢</h3></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="field"><label>縣市</label><input type="text" placeholder="請輸入縣市"></div>
+          <div class="field"><label>鄉鎮市</label><input type="text" placeholder="請輸入鄉鎮市"></div>
+          <div class="field"><label>村里</label><input type="text" placeholder="請輸入村里"></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline">清除</button>
+          <button class="btn btn-primary">🔍 查詢</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="roster-tools">
+      <div class="roster-title">核算受領資格人明細清單</div>
+      <button class="btn btn-sm">⇩ 報表下載</button>
+    </div>
+
+    <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-approved">第一類回饋範圍</span>
+    </h4>
+    <div class="table-scroll" style="margin-bottom:20px;">
+      <table class="bordered tbl-fixed" id="t5Table1">
+        <colgroup>
+          <col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:22%">
+          <col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:10%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="col-no">編號</th><th>縣市</th><th>鄉鎮市</th><th>行政村(里)</th>
+            <th>礦業用地(井位)<br>重複村(里)次數</th>
+            <th class="col-num">戶政機關之設籍<br>名冊(A)</th>
+            <th class="col-num">符合受領人資格，<br>但未在設籍名冊(B)</th>
+            <th class="col-num">不符合受領人資格，<br>但在設籍名冊(C)</th>
+            <th class="col-num">符合受領資格人<br>(A+B-C)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-no">1</td><td>新竹市</td><td>北區</td><td>曲溪里</td><td>2</td>
+            <td class="col-num">371</td><td class="col-num">0</td><td class="col-num">0</td><td class="col-num">371</td>
+          </tr>
+          <tr>
+            <td class="col-no">2</td><td>新竹市</td><td>東區</td><td>明湖里、柴橋里</td><td>4</td>
+            <td class="col-num">4,349</td><td class="col-num">0</td><td class="col-num">0</td><td class="col-num">4,349</td>
+          </tr>
+          <tr>
+            <td class="col-no">3</td><td>新竹縣</td><td>關西鎮</td><td>金山里、東山里</td><td>5</td>
+            <td class="col-num">682</td><td class="col-num">0</td><td class="col-num">0</td><td class="col-num">682</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-buffer">第二類回饋範圍</span>
+    </h4>
+    <div class="table-scroll">
+      <table class="bordered tbl-fixed" id="t5Table2">
+        <colgroup>
+          <col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:22%">
+          <col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:10%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="col-no">編號</th><th>縣市</th><th>鄉鎮市</th><th>行政村(里)</th>
+            <th>礦業用地(井位)<br>重複村(里)次數</th>
+            <th class="col-num">戶政機關之設籍<br>名冊(A)</th>
+            <th class="col-num">符合受領人資格，<br>但未在設籍名冊(B)</th>
+            <th class="col-num">不符合受領人資格，<br>但在設籍名冊(C)</th>
+            <th class="col-num">符合受領資格人<br>(A+B-C)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-no">1</td><td>台南市</td><td>官田區</td><td>官田里、隆田里等6里</td><td>1</td>
+            <td class="col-num">388</td><td class="col-num">0</td><td class="col-num">0</td><td class="col-num">388</td>
+          </tr>
+          <tr>
+            <td class="col-no">2</td><td>新竹市</td><td>香山區</td><td>東香里、頂福里、香村里</td><td>3</td>
+            <td class="col-num">1,317</td><td class="col-num">0</td><td class="col-num">0</td><td class="col-num">1,317</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions" style="justify-content:center;margin-top:18px;gap:14px;">
+      <button class="btn btn-outline">公布給所有鄉鎮</button>
+      <button class="btn btn-primary">結算</button>
+      <button class="btn btn-primary">下一步 →</button>
+    </div>
+  </section>
+
+  <!-- ============ TAB 6：回饋金受領人受領（新增） ============ -->
+  <section class="panel workflow-page" id="t6">
+    <div class="meta-bar">
+      <span>回饋金發放年度：<b>115年</b></span>
+      <span>更新日期：<b>115-08-17 09:00</b></span>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>查詢條件</h3></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="field"><label>縣市</label><input type="text" placeholder="請輸入縣市"></div>
+          <div class="field"><label>鄉鎮市</label><input type="text" placeholder="請輸入鄉鎮市"></div>
+          <div class="field"><label>行政村里</label><input type="text" placeholder="請輸入行政村里"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>受領人姓名</label><input type="text" placeholder="請輸入受領人姓名"></div>
+          <div class="field"><label>統一編號</label><input type="text" placeholder="請輸入統一編號"></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline">清除</button>
+          <button class="btn btn-primary">🔍 查詢</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="roster-tools">
+      <button class="btn btn-sm">產製回饋金現金領取清冊</button>
+      <button class="btn btn-sm">產製回饋金撥款領取清冊</button>
+      <button class="btn btn-sm">產製回饋金結算範例</button>
+      <button class="btn btn-sm" style="border-color:var(--blue);color:var(--blue-dark);" onclick="alert('已依目前所有行政區受領資料產製回饋金受領總表，可於下方下載。')">📊 產製總表</button>
+    </div>
+
+    <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-approved">第一類回饋範圍</span>
+    </h4>
+    <div class="table-scroll" style="margin-bottom:20px;">
+      <table class="bordered tbl-fixed" id="t6Table1">
+        <colgroup>
+          <col style="width:4%"><col style="width:4%"><col style="width:8%"><col style="width:8%"><col style="width:18%">
+          <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:10%"><col style="width:9%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th style="width:36px;"><input type="checkbox"></th>
+            <th class="col-no">編號</th><th>縣市</th><th>鄉鎮市</th><th>行政村(里)</th>
+            <th>礦業用地(井位)<br>重複村(里)次數</th>
+            <th class="col-num">戶政機關之設籍<br>名冊(A)</th>
+            <th class="col-num">符合受領資格人<br>(A+B-C)</th>
+            <th>需納入預算簿明細</th>
+            <th>檢具回饋金受領人<br>支領清冊</th>
+            <th>功能</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td class="col-no">1</td><td>新竹市</td><td>北區</td><td>曲溪里</td><td>2</td>
+            <td class="col-num">371</td><td class="col-num">371</td>
+            <td><span class="status-done">已完成</span></td>
+            <td><a href="#">支領清冊.pdf</a></td>
+            <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn btn-fn-primary" onclick="openUploadModal(this)">⬆ 支領資料上傳</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td class="col-no">2</td><td>新竹市</td><td>東區</td><td>明湖里、柴橋里</td><td>4</td>
+            <td class="col-num">4,349</td><td class="col-num">4,349</td>
+            <td><span class="status-pending">未完成</span></td>
+            <td><span class="status-none">--</span></td>
+            <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn btn-fn-primary" onclick="openUploadModal(this)">⬆ 支領資料上傳</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td class="col-no">3</td><td>新竹縣</td><td>關西鎮</td><td>金山里、東山里</td><td>5</td>
+            <td class="col-num">682</td><td class="col-num">682</td>
+            <td><span class="status-pending">未完成</span></td>
+            <td><span class="status-none">--</span></td>
+            <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn btn-fn-primary" onclick="openUploadModal(this)">⬆ 支領資料上傳</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin:0 0 8px;font-size:13.5px;color:var(--teal-dark);display:flex;align-items:center;gap:8px;">
+      <span class="tag tag-buffer">第二類回饋範圍</span>
+    </h4>
+    <div class="table-scroll">
+      <table class="bordered tbl-fixed" id="t6Table2">
+        <colgroup>
+          <col style="width:4%"><col style="width:4%"><col style="width:8%"><col style="width:8%"><col style="width:18%">
+          <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:10%"><col style="width:9%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th style="width:36px;"><input type="checkbox"></th>
+            <th class="col-no">編號</th><th>縣市</th><th>鄉鎮市</th><th>行政村(里)</th>
+            <th>礦業用地(井位)<br>重複村(里)次數</th>
+            <th class="col-num">戶政機關之設籍<br>名冊(A)</th>
+            <th class="col-num">符合受領資格人<br>(A+B-C)</th>
+            <th>需納入預算簿明細</th>
+            <th>檢具回饋金受領人<br>支領清冊</th>
+            <th>功能</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td class="col-no">1</td><td>台南市</td><td>官田區</td><td>官田里、隆田里等6里</td><td>1</td>
+            <td class="col-num">388</td><td class="col-num">388</td>
+            <td><span class="status-pending">未完成</span></td>
+            <td><span class="status-none">--</span></td>
+            <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn btn-fn-primary" onclick="openUploadModal(this)">⬆ 支領資料上傳</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td class="col-no">2</td><td>新竹市</td><td>香山區</td><td>東香里、頂福里、香村里</td><td>3</td>
+            <td class="col-num">1,317</td><td class="col-num">1,317</td>
+            <td><span class="status-pending">未完成</span></td>
+            <td><span class="status-none">--</span></td>
+            <td><div class="fn-cell"><button class="btn-fn">⬇ 下載</button><button class="btn-fn btn-fn-primary" onclick="openUploadModal(this)">⬆ 支領資料上傳</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions" style="justify-content:center;margin-top:14px;gap:14px;">
+      <button class="btn btn-outline">發布給所有鄉鎮</button>
+      <button class="btn btn-primary">結算</button>
+    </div>
+
+    <!-- 獨立新增受領人 -->
+    <div class="card add-recipient-card" style="margin-top:26px;">
+      <div class="card-head"><h3>新增受領人</h3></div>
+      <div class="card-body">
+        <p class="hint" style="margin-bottom:12px;">用於名冊確認後之個案補登，補登資料將併入該行政村(里)受領人清冊。</p>
+
+        <div class="row">
+          <div class="field"><label>縣市</label><input type="text" id="addRecipCounty" placeholder="請輸入縣市"></div>
+          <div class="field"><label>鄉鎮市</label><input type="text" id="addRecipTown" placeholder="請輸入鄉鎮市"></div>
+          <div class="field"><label>行政村(里)</label><input type="text" id="addRecipVillage" placeholder="請輸入行政村(里)"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>受領人姓名</label><input type="text" id="addRecipName" placeholder="請輸入受領人姓名"></div>
+          <div class="field"><label>統一編號／身分證字號</label><input type="text" id="addRecipId" placeholder="請輸入統一編號或身分證字號"></div>
+          <div class="field"><label>應領金額</label><input type="number" id="addRecipAmount" placeholder="請輸入金額（元）"></div>
+        </div>
+        <div class="actions" style="justify-content:flex-start;">
+          <button class="btn btn-primary" onclick="addRecipientRow()">➕ 新增受領人</button>
+          <button class="btn btn-outline" onclick="openBatchAddModal()">⬆ 批次上傳</button>
+        </div>
+
+        <div class="table-scroll" style="margin-top:14px;">
+          <table class="table-ui" id="addRecipTable">
+            <thead>
+              <tr><th>縣市</th><th>鄉鎮市</th><th>行政村(里)</th><th>受領人姓名</th><th>統一編號／身分證字號</th><th class="col-num">應領金額</th><th>功能</th></tr>
+            </thead>
+            <tbody id="addRecipTbody">
+              <tr>
+                <td colspan="7" style="text-align:center;color:var(--text-soft);">尚無新增之受領人資料</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- 批次新增受領人 Modal ---- -->
+  <div class="modal-overlay" id="batchAddModal" onclick="if(event.target===this)closeBatchAddModal()">
+    <div class="modal-box" style="max-width:520px;">
+      <div class="modal-head">
+        <h3>批次上傳新增受領人</h3>
+        <button class="modal-close" onclick="closeBatchAddModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="hint" style="margin-bottom:12px;">請先下載新增受領人範本，填妥多筆受領人資料（縣市、鄉鎮市、行政村(里)、受領人姓名、統一編號／身分證字號、應領金額）後上傳，系統將一次性併入下方清單。</p>
+        <div class="track-actions">
+          <button class="btn btn-outline btn-sm">⬇ 下載新增受領人範本</button>
+          <button class="btn btn-primary btn-sm" onclick="document.getElementById('addRecipBatchFile').click()">⬆ 選擇檔案</button>
+          <input type="file" id="addRecipBatchFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="batchAddRecipients(this)">
+        </div>
+        <div class="fname" id="addRecipBatchName">尚未選擇檔案（.xlsx／.csv）</div>
+        <div class="actions" style="margin-top:20px;">
+          <button class="btn btn-outline" onclick="closeBatchAddModal()">關閉</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---- 支領資料上傳 Modal ---- -->
+  <div class="modal-overlay" id="uploadModal" onclick="if(event.target===this)closeUploadModal()">
+    <div class="modal-box" style="max-width:680px;">
+      <div class="modal-head">
+        <h3>回饋金受領人支領資料上傳</h3>
+        <button class="modal-close" onclick="closeUploadModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="hint" style="margin-bottom:8px;">以下三項資料須完成上傳，系統檢核一致後，該行政區之受領狀態方視為「已完成」。</p>
+        <div class="dual-track">
+          <div class="track-box">
+            <h5><span class="track-num">1</span>受領人名冊（Excel）</h5>
+            <p class="hint">請先下載系統範本，填寫各受領人實際發放狀態後，另存上傳。</p>
+            <div class="track-actions">
+              <button class="btn btn-outline btn-sm">⬇ 下載範本</button>
+              <button class="btn btn-primary btn-sm">⬆ 選擇並上傳 Excel</button>
+            </div>
+            <div class="fname" id="uploadModalExcelName">尚未選擇檔案（.xlsx）</div>
+          </div>
+          <div class="track-box">
+            <h5><span class="track-num">2</span>紙本清冊（免核章 PDF）</h5>
+            <p class="hint">紙本領取清冊不需核章，請上傳掃描檔作為查核附件保存。</p>
+            <div class="track-actions">
+              <button class="btn btn-primary btn-sm">⬆ 選擇並上傳 PDF</button>
+            </div>
+            <div class="fname" id="uploadModalPdfName">尚未選擇檔案（.pdf）</div>
+          </div>
+          <div class="track-box">
+            <h5><span class="track-num">3</span>支領總表（須核章 PDF）</h5>
+            <p class="hint">新增之支領總表須完成公所核章後上傳，作為整體金額與筆數核對依據。</p>
+            <div class="track-actions"><button class="btn btn-outline btn-sm">⬇ 下載總表範本</button><button class="btn btn-primary btn-sm">⬆ 選擇並上傳核章總表</button></div>
+            <div class="fname">尚未選擇檔案（.pdf）</div>
+          </div>
+        </div>
+        <div class="actions" style="margin-top:16px;">
+          <button class="btn btn-outline" onclick="closeUploadModal()">取消</button>
+          <button class="btn btn-primary" onclick="confirmUpload()">確認送出</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="ocrModal" onclick="if(event.target===this)closeOcrModal()">
+    <div class="modal-box" style="max-width:860px;">
+      <div class="modal-head"><h3>戶政機關掃描名冊 OCR 辨識</h3><button class="modal-close" onclick="closeOcrModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="rule-notice"><b>流程位置：</b>本功能為第 1 步「回饋範圍確認」之前置作業；OCR 辨識與人工校正完成後，才可使用辨識結果進行行政區套疊與範圍確認。</div>
+        <div class="row">
+          <div class="field"><label>行政區</label><select><option>新竹市／東區／明湖里</option><option>新竹市／北區／曲溪里</option><option>新竹縣／關西鎮／金山里</option></select></div>
+          <div class="field"><label>文件類型</label><select><option>戶政機關設籍名冊</option><option>戶籍資料異動清冊</option></select></div>
+        </div>
+        <div class="track-box">
+          <h5>1. 上傳掃描檔</h5>
+          <p class="hint">支援 PDF、JPG、PNG；多頁 PDF 可逐頁辨識。建議解析度 300 DPI 以上，單檔上限 20 MB。</p>
+          <div class="track-actions"><button class="btn btn-primary btn-sm" onclick="document.getElementById('ocrFile').click()">⬆ 選擇掃描檔</button><button class="btn btn-outline btn-sm" onclick="runOcrDemo()">開始 OCR 辨識</button></div>
+          <input type="file" id="ocrFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="document.getElementById('ocrFileName').textContent='已選擇檔案：'+this.files[0].name">
+          <div class="fname" id="ocrFileName">尚未選擇掃描檔</div>
+        </div>
+        <div id="ocrResult" style="display:none;margin-top:14px;">
+          <div class="summary-stats"><div class="item"><span class="k">辨識頁數</span><span class="v">3</span></div><div class="item"><span class="k">辨識筆數</span><span class="v">86</span></div><div class="item"><span class="k">需人工確認</span><span class="v" style="color:#c9822a;">2</span></div><div class="item"><span class="k">整體信心度</span><span class="v">96.8%</span></div></div>
+          <h4 style="margin:14px 0 8px;">2. 辨識結果與人工校正</h4>
+          <table class="table-ui"><thead><tr><th>來源頁／列</th><th>姓名</th><th>身分證字號</th><th>戶籍地址</th><th>信心度</th><th>檢核結果</th></tr></thead><tbody><tr><td>第 1 頁／第 3 列</td><td>王○明</td><td>A123456789</td><td>新竹市東區明湖里○○路</td><td>99%</td><td><span class="tag tag-approved">通過</span></td></tr><tr><td>第 2 頁／第 8 列</td><td><input value="陳○華" style="min-width:90px;"></td><td><input value="B23456789?" style="min-width:120px;"></td><td>新竹市東區明湖里○○街</td><td>72%</td><td><span class="tag tag-buffer">字元不清，請確認</span></td></tr><tr><td>第 3 頁／第 5 列</td><td>林○珍</td><td>C223456781</td><td><input value="新竹市東區明湖里○○巷" style="min-width:210px;"></td><td>78%</td><td><span class="tag tag-buffer">地址低信心</span></td></tr></tbody></table>
+          <div class="actions" style="margin-top:14px;"><button class="btn btn-outline">匯出待確認清單</button><button class="btn btn-primary" onclick="confirmOcrResult()">確認校正並套用辨識結果</button></div>
+        </div>
+        <div class="actions" style="margin-top:16px;"><button class="btn btn-outline" onclick="closeOcrModal()">關閉</button></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" id="t7">
+    <div class="placeholder-panel"><div class="ic">✅</div>回饋金結算（維持原有作業流程）</div>
+  </section>
+
+</div>
+
+<script>
+  function toggleRegisterDetail(button){
+    const detail = document.getElementById('registerDetail');
+    const open = detail.classList.toggle('open');
+    button.textContent = open ? '收合村里設籍人數清單' : '查看村里設籍人數清單';
+  }
+
+  function filterByCategory(){
+    const val = document.getElementById('t4CatFilter').value;
+    const show1 = (val === 'all' || val === '1');
+    const show2 = (val === 'all' || val === '2');
+    ['t4Group1','t4Wrap1'].forEach(id=>document.getElementById(id).style.display = show1 ? '' : 'none');
+    ['t4Group2','t4Wrap2'].forEach(id=>document.getElementById(id).style.display = show2 ? '' : 'none');
+  }
+
+  function toggleSearch(){
+    const el = document.getElementById('t4SearchBox');
+    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+  }
+
+  function toggleHist(id){
+    const el = document.getElementById(id);
+    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+  }
+
+  function toggleAcc(id){
+    const el = document.getElementById(id);
+    const arrow = document.getElementById(id+'-arrow');
+    const open = el.style.display === 'block';
+    el.style.display = open ? 'none' : 'block';
+    if(arrow) arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(-180deg)';
+  }
+
+  function toggleCat(id){
+    const el = document.getElementById(id);
+    const arrow = document.getElementById(id+'-arrow');
+    const open = el.style.display === 'block';
+    el.style.display = open ? 'none' : 'block';
+    if(arrow) arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(-180deg)';
+  }
+
+  function saveMapConfig(){
+    alert('已將目前圖層、環域參數及礦業用地勾選狀態暫存，離開頁面前系統將保留本次設定。');
+  }
+
+  function confirmScope(){
+    alert('已依目前圖台設定完成回饋範圍確認，「回饋範圍確認結果」已更新。');
+  }
+
+  function applyVillageYear(){
+    const sel = document.getElementById('villageYearSelect');
+    alert(`已套用 ${sel.value} 年度村里界圖資至圖台。`);
+  }
+
+  function submitAnnouncement(){
+    const status = document.getElementById('announcementStatus');
+    status.textContent = '公告中';
+    status.style.color = '#197a52';
+    alert('回饋範圍公告已送出。');
+  }
+
+  function openWithdrawConfirm(){
+    document.getElementById('withdrawModal').classList.add('open');
+  }
+
+  function closeWithdrawConfirm(){
+    document.getElementById('withdrawModal').classList.remove('open');
+  }
+
+  function confirmWithdraw(){
+    closeWithdrawConfirm();
+    document.querySelectorAll('.tabs li').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    const t1Tab = document.querySelector('.tabs li[data-tab="t1"]');
+    t1Tab.classList.add('active');
+    document.getElementById('t1').classList.add('active');
+    document.getElementById('currentPageTitle').textContent = t1Tab.textContent.trim();
+    const status = document.getElementById('announcementStatus');
+    status.textContent = '尚未送出';
+    status.style.color = '#c9822a';
+    alert('本次回饋範圍公告已撤回，流程已回到「1. 回饋範圍確認」重新開始。');
+  }
+
+  function downloadWellTemplate(){
+    alert('已下載井位座標上傳範本，欄位包含年份、礦區字號、井號、緯度與經度。');
+  }
+
+  function uploadWellCoordinates(input){
+    const file = input.files && input.files[0];
+    if(!file){ return; }
+    const year = document.getElementById('wellUploadYear').value;
+    document.getElementById('wellCoordinateFileName').textContent = `已選擇 ${year}井位座標檔案：${file.name}`;
+    alert(`${year}井位座標檔案已上傳，系統將檢核座標格式與重複井位。`);
+  }
+
+  function openRosterValidation(){
+    document.getElementById('rosterValidationModal').classList.add('open');
+    document.getElementById('validationErrors').style.display = 'none';
+  }
+
+  function closeRosterValidation(){
+    document.getElementById('rosterValidationModal').classList.remove('open');
+  }
+
+  function runRosterValidation(){
+    const file = document.getElementById('rosterValidationFile').files[0];
+    if(!file){ alert('請先選擇清冊／名冊檔案。'); return; }
+    document.getElementById('validationErrors').style.display = 'block';
+  }
+  function downloadOcrResult(scope){
+    alert(`已下載 ${scope} 的 OCR 辨識結果檔案（含辨識欄位、信心度與人工校正狀態）。`);
+  }
+
+  function renderMiningTable(){
+    // 顯示筆數切換（示意，實際應重新請求資料）
+  }
+
+  function fillRegisterCount(){
+    const sel = document.getElementById('t3TownSelect');
+    document.getElementById('t3RegisterCount').value = sel.value;
+  }
+
+  function sortTable(tableId, colIndex, th){
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const asc = !th.classList.contains('sort-asc');
+
+    table.querySelectorAll('th.sortable').forEach(h=>h.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+    rows.sort((a,b)=>{
+      let x = a.children[colIndex].textContent.trim().replace(/,/g,'');
+      let y = b.children[colIndex].textContent.trim().replace(/,/g,'');
+      const nx = parseFloat(x), ny = parseFloat(y);
+      if(!isNaN(nx) && !isNaN(ny)){ x = nx; y = ny; }
+      if(x < y) return asc ? -1 : 1;
+      if(x > y) return asc ? 1 : -1;
+      return 0;
+    });
+    rows.forEach(r=>tbody.appendChild(r));
+  }
+
+  function toggleFormula(){
+    const el = document.getElementById('formulaBox');
+    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+  }
+
+  let recipRowCount = 0;
+  function appendRecipientRow(r){
+    const tbody = document.getElementById('addRecipTbody');
+    if(recipRowCount === 0){ tbody.innerHTML = ''; }
+    recipRowCount++;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.county}</td><td>${r.town}</td><td>${r.village}</td><td>${r.name}</td><td>${r.idNo}</td><td class="col-num">NT$ ${Number(r.amount).toLocaleString()}</td><td><div class="fn-cell"><button class="btn-fn" onclick="this.closest('tr').remove()">🗑 刪除</button></div></td>`;
+    tbody.appendChild(tr);
+  }
+
+  function addRecipientRow(){
+    const county = document.getElementById('addRecipCounty').value.trim();
+    const town = document.getElementById('addRecipTown').value.trim();
+    const village = document.getElementById('addRecipVillage').value.trim();
+    const name = document.getElementById('addRecipName').value.trim();
+    const idNo = document.getElementById('addRecipId').value.trim();
+    const amount = document.getElementById('addRecipAmount').value.trim();
+
+    if(!county || !town || !village || !name || !idNo || !amount){
+      alert('請完整填寫縣市、鄉鎮市、行政村(里)、受領人姓名、統一編號與應領金額後再新增。');
+      return;
+    }
+
+    appendRecipientRow({ county, town, village, name, idNo, amount });
+
+    ['addRecipCounty','addRecipTown','addRecipVillage','addRecipName','addRecipId','addRecipAmount'].forEach(id=>{
+      document.getElementById(id).value = '';
+    });
+  }
+
+  function openBatchAddModal(){
+    document.getElementById('batchAddModal').classList.add('open');
+  }
+  function closeBatchAddModal(){
+    document.getElementById('batchAddModal').classList.remove('open');
+  }
+
+  function batchAddRecipients(input){
+    const file = input.files && input.files[0];
+    if(!file){ return; }
+    document.getElementById('addRecipBatchName').textContent = '已選擇檔案：' + file.name;
+
+    // 示意用批次匯入：模擬解析上傳檔案後取得的多筆受領人資料（欄位與個別登錄表單一致：縣市／鄉鎮市／行政村(里)／受領人姓名／統一編號／應領金額）
+    const mockRows = [
+      { county:'新竹市', town:'東區', village:'湖濱里、高峰里', name:'王○明', idNo:'A123456789', amount:400 },
+      { county:'新竹市', town:'香山區', village:'東香里、頂福里、香村里', name:'陳○華', idNo:'B234567890', amount:350 }
+    ];
+
+    mockRows.forEach(r=>appendRecipientRow(r));
+    alert(`已成功匯入 ${mockRows.length} 筆受領人資料，已併入下方清單，請確認無誤後送出。`);
+    input.value = '';
+    closeBatchAddModal();
+  }
+
+  function openUploadModal(btn){
+    document.getElementById('uploadModal').classList.add('open');
+  }
+  function closeUploadModal(){
+    document.getElementById('uploadModal').classList.remove('open');
+  }
+  function openOcrModal(){
+    document.getElementById('ocrModal').classList.add('open');
+    document.getElementById('ocrResult').style.display = 'none';
+  }
+  function closeOcrModal(){
+    document.getElementById('ocrModal').classList.remove('open');
+  }
+  function runOcrDemo(){
+    const file = document.getElementById('ocrFile').files[0];
+    if(!file){ alert('請先選擇戶政機關提供的掃描檔。'); return; }
+    document.getElementById('ocrResult').style.display = 'block';
+  }
+  function confirmOcrResult(){
+    const status = document.getElementById('ocrStatus');
+    status.textContent = '辨識狀態：已完成，已產生村里設籍人數與行政區比對資料';
+    status.style.color = '#197a52';
+    closeOcrModal();
+    alert('OCR 辨識與人工校正已完成，現在可進行回饋範圍確認。');
+  }
+  function confirmUpload(){
+    closeUploadModal();
+    alert('已收到受領人名冊 Excel、免核章紙本清冊 PDF 與核章支領總表 PDF，系統將進行資料比對，比對完成後該行政區受領狀態將更新為「已完成」。');
+  }
+
+  document.querySelectorAll('.tabs li').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tabs li').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+      document.getElementById('currentPageTitle').textContent = tab.textContent.trim();
+    });
+  });
+
+  document.querySelectorAll('#t2 tbody tr,#t3 tbody tr,#t4 tbody tr,#t5 tbody tr,#t6 tbody tr').forEach(row=>{
+    row.style.display = row.textContent.includes('東區') ? '' : 'none';
+  });
+  document.querySelectorAll('#t4 tbody').forEach(tbody=>{
+    let number = 1;
+    tbody.querySelectorAll('tr').forEach(row=>{
+      if(row.style.display !== 'none') row.querySelector('.col-no').textContent = number++;
+    });
+  });
+  document.querySelectorAll('#t2 table,#t3 table,#t4 table,#t5 table,#t6 table').forEach(table=>{
+    let number = 1;
+    table.querySelectorAll(':scope > tbody > tr').forEach(row=>{
+      if(row.style.display === 'none') return;
+      const firstCell = row.querySelector('td');
+      if(firstCell && /^\d+$/.test(firstCell.textContent.trim())) firstCell.textContent = number++;
+    });
+  });
+  document.querySelectorAll('#t3 .table-wide').forEach(table=>{
+    const headers = table.querySelectorAll('thead th');
+    headers[4].textContent = '公所行政作業費';
+    headers[5].textContent = '';
+    headers[6].textContent = '受領人每人平均可分配金額';
+    headers[7].textContent = '';
+    table.querySelectorAll('tbody tr').forEach(row=>{
+      const cells = row.querySelectorAll('td');
+      cells[4].textContent = cells[5].textContent;
+      cells[5].textContent = '';
+      cells[6].textContent = cells[7].textContent;
+      cells[7].textContent = '';
+    });
+    table.querySelectorAll('tr').forEach(row=>{
+      const cells = row.children;
+      if(cells[7]) cells[7].remove();
+      if(cells[5]) cells[5].remove();
+    });
+    const colgroup = table.querySelector('colgroup');
+    if(colgroup){
+      const cols = colgroup.children;
+      if(cols[7]) cols[7].remove();
+      if(cols[5]) cols[5].remove();
+    }
+  });
+</script>
+
+
+</body></html>
